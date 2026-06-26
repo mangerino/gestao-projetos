@@ -1,0 +1,2408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JNM Engenharia — Gestão de Projetos v2.5</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0f14;
+  --bg2: #141720;
+  --bg3: #1c2030;
+  --panel: #1e2235;
+  --border: #2a2f45;
+  --accent: #f5a623;
+  --accent2: #e8830c;
+  --blue: #4a90d9;
+  --green: #27ae60;
+  --red: #e74c3c;
+  --yellow: #f39c12;
+  --purple: #8e44ad;
+  --text: #e8eaf0;
+  --text2: #a0a8c0;
+  --text3: #606880;
+  --radius: 8px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+h1,h2,h3,h4 { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.02em; }
+button { cursor: pointer; border: none; font-family: 'Barlow', sans-serif; }
+input, select, textarea { font-family: 'Barlow', sans-serif; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* LOGIN */
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); position: relative; overflow: hidden; }
+.login-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 50%, rgba(245,166,35,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(74,144,217,0.06) 0%, transparent 50%); }
+.login-box { position: relative; z-index: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 48px 40px; width: 380px; box-shadow: 0 24px 64px rgba(0,0,0,0.6); }
+.login-logo { text-align: center; margin-bottom: 32px; }
+.login-logo span { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 36px; color: var(--accent); letter-spacing: 0.05em; }
+.login-logo p { color: var(--text2); font-size: 13px; margin-top: 4px; letter-spacing: 0.1em; text-transform: uppercase; }
+.login-box h2 { font-size: 20px; font-weight: 600; margin-bottom: 24px; color: var(--text2); }
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.field input, .field select, .field textarea { width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: var(--radius); font-size: 14px; transition: border-color .2s; outline: none; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+.field select option { background: var(--bg2); }
+.field textarea { resize: vertical; min-height: 80px; }
+.err { background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.4); color: #f07070; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+.info-box { background: rgba(74,144,217,0.1); border: 1px solid rgba(74,144,217,0.3); color: #7ab8e8; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+
+/* GOOGLE DRIVE STARTUP */
+.startup-overlay { position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center; }
+.startup-box { background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:460px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,0.6); }
+.startup-box h2 { font-size:20px;font-weight:700;margin-bottom:8px; }
+.gdrive-btn { display:flex;align-items:center;gap:10px;background:#fff;color:#3c4043;border:1px solid #dadce0;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;font-family:'Barlow',sans-serif;cursor:pointer;width:100%;justify-content:center;margin-bottom:10px;transition:box-shadow .2s; }
+.gdrive-btn:hover { box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+.gdrive-btn svg { flex-shrink:0; }
+.gdrive-status { display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.3);border-radius:8px;margin-bottom:12px;font-size:13px;color:var(--green); }
+.gdrive-warn { display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.3);border-radius:8px;margin-bottom:12px;font-size:13px;color:var(--yellow); }
+.gdrive-indicator { display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3); }
+.gdrive-indicator .dot-drive { width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0; }
+.gdrive-indicator .dot-drive.saving { background:var(--yellow);animation:pulse 1s infinite; }
+.gdrive-indicator .dot-drive.error { background:var(--red); }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 600; transition: all .2s; white-space: nowrap; }
+.btn-primary { background: var(--accent); color: #0d0f14; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+.btn-danger:hover { background: rgba(231,76,60,0.3); }
+.btn-success { background: rgba(39,174,96,0.15); color: #27ae60; border: 1px solid rgba(39,174,96,0.3); }
+.btn-success:hover { background: rgba(39,174,96,0.3); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-full { width: 100%; justify-content: center; }
+.btn-icon { padding: 6px 10px; }
+
+/* LAYOUT */
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 220px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+.sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); }
+.sidebar-logo .brand { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; color: var(--accent); }
+.sidebar-logo .sub { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; }
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.nav-section { padding: 12px 16px 4px; font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: var(--text2); font-size: 14px; font-weight: 500; cursor: pointer; transition: all .2s; border-left: 3px solid transparent; }
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: rgba(245,166,35,0.1); color: var(--accent); border-left-color: var(--accent); }
+.nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+.user-info { display: flex; align-items: center; gap: 10px; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; color: #0d0f14; flex-shrink: 0; }
+.user-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.user-role { font-size: 11px; color: var(--text3); }
+.main { margin-left: 220px; flex: 1; padding: 28px 32px; min-height: 100vh; }
+
+/* SAVE INDICATOR - canto superior direito */
+.save-indicator { position: fixed; top: 12px; right: 16px; z-index: 200; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text3); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.save-indicator .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.save-indicator .dot.unsaved { background: var(--yellow); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* TOPBAR */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+.page-title { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 700; color: var(--text); }
+.page-title span { color: var(--accent); }
+.search-bar { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; min-width: 260px; }
+.search-bar input { background: none; border: none; color: var(--text); font-size: 14px; outline: none; width: 100%; }
+.search-bar svg { color: var(--text3); flex-shrink: 0; }
+
+/* CARDS / STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.stat-card.orange::before { background: var(--accent); }
+.stat-card.blue::before { background: var(--blue); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.red::before { background: var(--red); }
+.stat-card.yellow::before { background: var(--yellow); }
+.stat-card.purple::before { background: var(--purple); }
+.stat-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.stat-value { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700; color: var(--text); }
+.stat-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+/* TABLE */
+.table-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.table-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.table-header h3 { font-size: 16px; font-weight: 700; }
+.table-actions { display: flex; gap: 8px; align-items: center; }
+table { width: 100%; border-collapse: collapse; }
+thead th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); background: var(--bg2); white-space: nowrap; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--bg3); }
+tbody td { padding: 12px 16px; font-size: 13px; color: var(--text); }
+.td-mono { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; }
+
+/* BADGES */
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.badge-andamento { background: rgba(74,144,217,0.2); color: var(--blue); }
+.badge-concluido { background: rgba(39,174,96,0.2); color: var(--green); }
+.badge-standby { background: rgba(243,156,18,0.2); color: var(--yellow); }
+.badge-cancelado { background: rgba(231,76,60,0.2); color: var(--red); }
+.badge-planejamento { background: rgba(142,68,173,0.2); color: var(--purple); }
+.badge-atraso { background: rgba(231,76,60,0.15); color: #ff6b6b; border: 1px solid rgba(231,76,60,0.3); }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+.modal { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 720px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow); }
+.modal-lg { max-width: 900px; }
+.modal-xl { max-width: 1100px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.modal-header h2 { font-size: 20px; font-weight: 700; }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid .span2 { grid-column: span 2; }
+
+/* CHARTS */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.chart-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.chart-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: var(--text2); }
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-label { font-size: 12px; color: var(--text2); min-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { flex: 1; background: var(--bg2); border-radius: 3px; height: 10px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width .5s ease; }
+.bar-val { font-size: 12px; color: var(--text3); min-width: 72px; text-align: right; font-family: 'Barlow Condensed', sans-serif; }
+
+/* DONUT */
+.donut-wrap { display: flex; align-items: center; gap: 20px; }
+.donut-svg { flex-shrink: 0; }
+.donut-legend { display: flex; flex-direction: column; gap: 8px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* ALERTS */
+.alert-list { display: flex; flex-direction: column; gap: 8px; }
+.alert-item { display: flex; align-items: center; gap: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; border-left: 3px solid var(--red); }
+.alert-item.warn { border-left-color: var(--yellow); }
+.alert-content { flex: 1; }
+.alert-title { font-size: 13px; font-weight: 600; }
+.alert-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+/* TABS */
+.tabs { display: flex; gap: 2px; background: var(--bg2); border-radius: var(--radius); padding: 4px; margin-bottom: 20px; width: fit-content; }
+.tab { padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; transition: all .2s; }
+.tab.active { background: var(--panel); color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+
+/* PROJECT DETAIL */
+.proj-detail-header { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+.proj-code { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; color: var(--accent); font-weight: 700; letter-spacing: 0.05em; }
+.proj-name { font-size: 24px; font-weight: 700; margin: 4px 0; }
+.proj-meta { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 12px; }
+.proj-meta-item { font-size: 13px; color: var(--text2); }
+.proj-meta-item strong { color: var(--text); }
+.cost-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 16px; }
+.cost-box { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+.cost-box-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+.cost-box-value { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); margin-top: 4px; }
+
+/* EMPTY */
+.empty { text-align: center; padding: 48px 24px; color: var(--text3); }
+.empty p { font-size: 14px; }
+
+/* FILTER ROW */
+.filter-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.filter-row select, .filter-row input { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: var(--radius); font-size: 13px; outline: none; }
+.filter-row select:focus, .filter-row input:focus { border-color: var(--accent); }
+
+/* TOAST */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 20px; font-size: 14px; box-shadow: var(--shadow); pointer-events: all; display: flex; align-items: center; gap: 10px; min-width: 240px; animation: slideIn .3s ease; }
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error { border-left: 3px solid var(--red); }
+.toast.info { border-left: 3px solid var(--blue); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* REPORT TABLE */
+.report-table table { font-size: 12px; }
+.report-table thead th { font-size: 10px; padding: 8px 10px; }
+.report-table tbody td { padding: 8px 10px; }
+
+/* RESPONSIVE */
+@media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; } .form-grid .span2 { grid-column: span 1; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+// ── DATA SEED ────────────────────────────────────────────────────────────────
+const SEED = {"projects":[{"Codigo":"JNM.01-0005-DISP","Nome_Projeto":"Dispositivo para Retirada de Caixa de Câmbio Trator John Deere Série 8R","Cliente":"Raízen - Unidade Univalem","Data_Inicio":"2026-02-25","Data_Prev_Termino":"2026-03-17","Data_Real_Termino":"2026-03-17","Responsavel":"Ricardo Castelhano","Status":"Concluido","Objetivo":"Desenvolver dispositivo tipo cavalete para apoiar e sacar a caixa de câmbio do trator","Observacoes":"Projeto foi desenvolvido em 2025, com pequenas alterações. (Código antigo JNM 1102-DDCC)","Localidade":"Adamantina - SP","Cod_Localidade":"JNM.01","Categoria_Projeto":"Dispositivos","Cod_Categoria":"DISP","SubCategoria":"Manutenção","Revisao":"REV00"},{"Codigo":"JNM.01-0008-DISP","Nome_Projeto":"Dispositivo para Retirada de Caixa de Câmbio Trator John Deere Série 8R","Cliente":"Raízen - Unidade Gasa","Data_Inicio":"2026-03-12","Data_Prev_Termino":"2026-03-19","Data_Real_Termino":"2026-03-17","Responsavel":"Ricardo Castelhano","Status":"Concluido","Objetivo":"Desenvolver dispositivo tipo cavalete para apoiar e sacar a caixa de câmbio do trator","Observacoes":"Projeto foi desenvolvido em 2025, com pequenas alterações.","Localidade":"Adamantina - SP","Cod_Localidade":"JNM.01","Categoria_Projeto":"Dispositivos","Cod_Categoria":"DISP","SubCategoria":"Manutenção","Revisao":"REV00"},{"Codigo":"JNM.01-0003-ESTR","Nome_Projeto":"Cavalete Desmontável Agrícola","Cliente":"Raízen - Unidade Univalem","Data_Inicio":"2026-03-12","Data_Prev_Termino":"2026-03-16","Data_Real_Termino":"2026-03-17","Responsavel":"Ricardo Castelhano Corrêa","Status":"Concluido","Objetivo":"Cavalete desmontável de apoio para elevador da colhedora John Deere","Observacoes":"Antigo código de projeto JNM 1113","Localidade":"Adamantina - SP","Cod_Localidade":"JNM.01","Categoria_Projeto":"Estruturas","Cod_Categoria":"ESTR","SubCategoria":"Cavaletes","Revisao":"REV00"},{"Codigo":"JNM.01-0004-COMP","Nome_Projeto":"Caixa Redutora","Cliente":"Junamar","Data_Inicio":"2026-03-18","Data_Prev_Termino":"2026-03-18","Data_Real_Termino":"2026-03-18","Responsavel":"Gabriel","Status":"Concluido","Objetivo":null,"Observacoes":"Desenho Redutor","Localidade":"Adamantina - SP","Cod_Localidade":"JNM.01","Categoria_Projeto":"Componentes Mecânicos","Cod_Categoria":"COMP","SubCategoria":"Redutor","Revisao":"REV00"},{"Codigo":"JNM.02-0005-ADAP","Nome_Projeto":"Proteção Hilux","Cliente":"Junamar três lagoas","Data_Inicio":"2026-03-19","Data_Prev_Termino":"2026-03-19","Data_Real_Termino":"2026-03-19","Responsavel":"Gabriel","Status":"Concluido","Objetivo":"Proteção parte de baixo Hilux","Observacoes":null,"Localidade":"Três Lagoas - MS","Cod_Localidade":"JNM.02","Categoria_Projeto":"Adaptações e Modificações","Cod_Categoria":"ADAP","SubCategoria":"Carrocerias","Revisao":"REV00"},{"Codigo":"JNM.02-0006-ADAP","Nome_Projeto":"PROTEÇÃO INFERIOR HILUX TIPO 2","Cliente":"JUNAMAR TRÊS LAGOAS","Data_Inicio":"2026-03-20","Data_Prev_Termino":"2026-03-20","Data_Real_Termino":null,"Responsavel":"GABRIEL","Status":"Em andamento","Objetivo":"PROTEGER CHÃO HILUX","Observacoes":null,"Localidade":"Três Lagoas - MS","Cod_Localidade":"JNM.02","Categoria_Projeto":"Adaptações e Modificações","Cod_Categoria":"ADAP","SubCategoria":"Carrocerias","Revisao":"REV00"},{"Codigo":"JNM.02-0007-ADAP","Nome_Projeto":"TAMPA ADUBADEIRA 1 CAIXA","Cliente":"Junamar Ms","Data_Inicio":"2026-03-23","Data_Prev_Termino":"2026-03-23","Data_Real_Termino":"2026-03-23","Responsavel":"FERNANDO","Status":"Concluido","Objetivo":"Tampa adequada para projetos anteriores","Observacoes":"Dispositivo confeccionado Unidade MS sem previsão de custo materiais e mo","Localidade":"Três Lagoas - MS","Cod_Localidade":"JNM.02","Categoria_Projeto":"Adaptações e Modificações","Cod_Categoria":"ADAP","SubCategoria":"Equipamentos Industriais","Revisao":"REV00"},{"Codigo":"JNM.01-0009-DISP","Nome_Projeto":"Dispositivo sacador Rolo Picador","Cliente":"Raizen Univalem","Data_Inicio":"2026-03-23","Data_Prev_Termino":"2026-03-23","Data_Real_Termino":"2026-03-23","Responsavel":"Gabriel","Status":"Concluido","Objetivo":"Fazer Manutenção em colhedeiras","Observacoes":null,"Localidade":"Adamantina - SP","Cod_Localidade":"JNM.01","Categoria_Projeto":"Dispositivos","Cod_Categoria":"DISP","SubCategoria":"Manutenção","Revisao":"REV00"},{"Codigo":"JNM.02-0009-ADAP","Nome_Projeto":"CONJUNTO GUARDA CORPO CARROCERIA CAMINHÃO","Cliente":"JUNAMAR","Data_Inicio":"2026-03-24","Data_Prev_Termino":"2026-03-24","Data_Real_Termino":"2026-03-24","Responsavel":"FERNANDO","Status":"Concluido","Objetivo":null,"Observacoes":null,"Localidade":"Três Lagoas - MS","Cod_Localidade":"JNM.02","Categoria_Projeto":"Adaptações e Modificações","Cod_Categoria":"ADAP","SubCategoria":"Carrocerias","Revisao":"REV00"},{"Codigo":"JNM.01-0010-ADAP","Nome_Projeto":"Adaptador para Recarga de Cilindro Nitrogênio","Cliente":"Raízen - Univalem","Data_Inicio":"2026-03-16","Data_Prev_Termino":"2026-05-30","Data_Real_Termino":null,"Responsavel":"Ricardo Castelhano","Status":"Em andamento","Objetivo":"Desenvolver dispositivo adaptador para recarga de cilindros de nitrogênio","Observacoes":"Será desenvolvido protótipo inicial e testado localmente","Localidade":"Adamantina - SP","Cod_Localidade":"JNM.01","Categoria_Projeto":"Adaptações e Modificações","Cod_Categoria":"ADAP","SubCategoria":"Dispositivos Mecânicos","Revisao":"REV00"},{"Codigo":"JNM.02-0011-IMPL","Nome_Projeto":"Base Martelo 800x700 CQ 230","Cliente":"Eldorado","Data_Inicio":"2026-03-26","Data_Prev_Termino":"2026-03-27","Data_Real_Termino":null,"Responsavel":"FERNANDO TIAGO","Status":"Concluido","Objetivo":"Base para Lança Komatsu MTG Rachador Easy 3 Cortantes L1-L2","Observacoes":null,"Localidade":"Três Lagoas - MS","Cod_Localidade":"JNM.02","Categoria_Projeto":"Implementos Agrícolas","Cod_Categoria":"IMPL","SubCategoria":"Colheita","Revisao":"REV00"}],"materials":[{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 50x50x3.00","Especificacao":"ASTM A36","Unidade":"Kg","Quantidade":1.02,"Valor_Unit":36.98,"Total":37.72},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 70x70x4.75","Especificacao":"ASTM A36","Unidade":"Kg","Quantidade":0.553,"Valor_Unit":101.42,"Total":56.09},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 90x90x4.75","Especificacao":"ASTM A36","Unidade":"Kg","Quantidade":2.012,"Valor_Unit":105.33,"Total":211.92},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 100x100x4.75","Especificacao":"ASTM A36","Unidade":"Kg","Quantidade":1.33,"Valor_Unit":120.67,"Total":160.49},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Ferro e Aco","Descricao":"Chapa 3/8\"","Especificacao":"ASTM A36","Unidade":"Kg","Quantidade":0.14,"Valor_Unit":646.3,"Total":90.48},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-03-03","Categoria":"Servicos Extras","Descricao":"Emissao ART","Especificacao":"CREA","Unidade":"servico","Quantidade":1,"Valor_Unit":1100,"Total":1100},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Ferro e Aco","Descricao":"Barra Roscada 42mm","Especificacao":"Aço","Unidade":"metro","Quantidade":2,"Valor_Unit":161.12,"Total":322.24},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Componentes de Ligacao","Descricao":"Rodízio 150mm giro 360º s/freio","Especificacao":"Giratório","Unidade":"unidade","Quantidade":2,"Valor_Unit":136.78,"Total":273.56},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Componentes de Ligacao","Descricao":"Rodízio 150mm giro 360º c/freio","Especificacao":"Giratório","Unidade":"unidade","Quantidade":1,"Valor_Unit":159.74,"Total":159.74},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Componentes de Ligacao","Descricao":"Rodízio 150mm fixo","Especificacao":"Fixo","Unidade":"unidade","Quantidade":4,"Valor_Unit":102.73,"Total":410.92},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Componentes de Ligacao","Descricao":"Porca Sextavada M42","Especificacao":"M42","Unidade":"unidade","Quantidade":12,"Valor_Unit":18.56,"Total":222.72},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Componentes de Ligacao","Descricao":"Parafuso Sextavado M12x40","Especificacao":"M12 x 40","Unidade":"unidade","Quantidade":8,"Valor_Unit":0.87,"Total":6.96},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Componentes de Ligacao","Descricao":"Parafuso Sextavado M16x50","Especificacao":"M16 x 50","Unidade":"unidade","Quantidade":16,"Valor_Unit":1.94,"Total":31.04},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Componentes de Ligacao","Descricao":"Arruela Lisa M42","Especificacao":"M42","Unidade":"unidade","Quantidade":24,"Valor_Unit":6.38,"Total":153.12},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Cortes a Laser e Dobras","Descricao":"Serviço de corte laser","Especificacao":"ASTM A36","Unidade":"servico","Quantidade":1,"Valor_Unit":450,"Total":450},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Material de Pintura","Descricao":"Thinner Standard","Especificacao":"Standard","Unidade":"Litro","Quantidade":0.5,"Valor_Unit":12.8,"Total":6.4},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Material de Pintura","Descricao":"Tinta Esmalte Industrial","Especificacao":"Diversas cores","Unidade":"Litro","Quantidade":2,"Valor_Unit":27.1,"Total":54.2},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-03-17","Categoria":"Servicos Extras","Descricao":"Boleto ART","Especificacao":"CREA","Unidade":"servico","Quantidade":1,"Valor_Unit":108.39,"Total":108.39},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Categoria":"Servicos Extras","Descricao":"Plaqueta de Identificação","Especificacao":"Laser em Inox","Unidade":"unidade","Quantidade":1,"Valor_Unit":70,"Total":70},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 70x70x4.75","Especificacao":"ASTM A36","Unidade":"Kg","Quantidade":0.553,"Valor_Unit":101.42,"Total":56.09},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 90x90x4.75","Especificacao":"ASTM A36","Unidade":"Kg","Quantidade":2.012,"Valor_Unit":105.33,"Total":211.92},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 100x100x4.75","Especificacao":"ASTM A36","Unidade":"Kg","Quantidade":1.33,"Valor_Unit":120.67,"Total":160.49},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Ferro e Aco","Descricao":"Chapa 3/8\"","Especificacao":"ASTM A36","Unidade":"Kg","Quantidade":0.14,"Valor_Unit":646.3,"Total":90.48},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Ferro e Aco","Descricao":"Barra Roscada 42mm","Especificacao":"Aço","Unidade":"metro","Quantidade":2,"Valor_Unit":161.12,"Total":322.24},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Componentes de Ligacao","Descricao":"Rodízio 150mm s/freio","Especificacao":"Giratório","Unidade":"unidade","Quantidade":2,"Valor_Unit":136.78,"Total":273.56},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Componentes de Ligacao","Descricao":"Rodízio 150mm c/freio","Especificacao":"Giratório","Unidade":"unidade","Quantidade":1,"Valor_Unit":159.74,"Total":159.74},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Componentes de Ligacao","Descricao":"Rodízio 150mm fixo","Especificacao":"Fixo","Unidade":"unidade","Quantidade":4,"Valor_Unit":102.73,"Total":410.92},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Componentes de Ligacao","Descricao":"Porca Sextavada M42","Especificacao":"M42","Unidade":"unidade","Quantidade":12,"Valor_Unit":18.56,"Total":222.72},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Componentes de Ligacao","Descricao":"Parafuso M12x40","Especificacao":"M12 x 40","Unidade":"unidade","Quantidade":8,"Valor_Unit":0.87,"Total":6.96},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Componentes de Ligacao","Descricao":"Parafuso M16x50","Especificacao":"M16 x 50","Unidade":"unidade","Quantidade":16,"Valor_Unit":1.94,"Total":31.04},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Componentes de Ligacao","Descricao":"Arruela Lisa M42","Especificacao":"M42","Unidade":"unidade","Quantidade":24,"Valor_Unit":6.38,"Total":153.12},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Cortes a Laser e Dobras","Descricao":"Serviço de corte laser","Especificacao":"ASTM A36","Unidade":"servico","Quantidade":1,"Valor_Unit":450,"Total":450},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Material de Pintura","Descricao":"Thinner Standard","Especificacao":"Standard","Unidade":"Litro","Quantidade":0.5,"Valor_Unit":12.8,"Total":6.4},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Material de Pintura","Descricao":"Tinta Esmalte Industrial","Especificacao":"Diversas cores","Unidade":"Litro","Quantidade":2,"Valor_Unit":27.1,"Total":54.2},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Categoria":"Servicos Extras","Descricao":"Plaqueta de Identificação","Especificacao":"Laser em Inox","Unidade":"unidade","Quantidade":1,"Valor_Unit":70,"Total":70},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-12","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 70x70x4.75","Especificacao":"ASTM A36","Unidade":"metro","Quantidade":14.24,"Valor_Unit":101.41,"Total":1444.08},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-13","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 50x50x3.00","Especificacao":"ASTM A36","Unidade":"metro","Quantidade":1.2,"Valor_Unit":35.58,"Total":42.70},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-13","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 100x80x4.75","Especificacao":"ASTM A36","Unidade":"metro","Quantidade":1.4,"Valor_Unit":106.65,"Total":149.31},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-13","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 60x60x3.00","Especificacao":"ASTM A36","Unidade":"metro","Quantidade":0.8,"Valor_Unit":17.5,"Total":14.0},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-13","Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 40x40x2.00","Especificacao":"ASTM A36","Unidade":"metro","Quantidade":0.8,"Valor_Unit":14.2,"Total":11.36},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-13","Categoria":"Ferro e Aco","Descricao":"Chapa 3/16\"","Especificacao":"ASTM A36","Unidade":"m²","Quantidade":0.8,"Valor_Unit":137.5,"Total":110},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-17","Categoria":"Servicos Extras","Descricao":"Emissao ART6","Especificacao":"CREA","Unidade":"servico","Quantidade":1,"Valor_Unit":600,"Total":600},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-17","Categoria":"Servicos Extras","Descricao":"Boleto ART","Especificacao":"CREA","Unidade":"servico","Quantidade":1,"Valor_Unit":108.39,"Total":108.39},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-13","Categoria":"Servicos Extras","Descricao":"Desenvolvimento Projeto","Especificacao":"Desenho Técnico","Unidade":"unidade","Quantidade":1,"Valor_Unit":100,"Total":100},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-17","Categoria":"Servicos Extras","Descricao":"Plaqueta de Identificação","Especificacao":"Laser em Inox","Unidade":"unidade","Quantidade":1,"Valor_Unit":70,"Total":70},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-16","Categoria":"Material de Pintura","Descricao":"Tinta Esmalte Industrial","Especificacao":"Diversas cores","Unidade":"Litro","Quantidade":2,"Valor_Unit":27.1028,"Total":54.21},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-16","Categoria":"Material de Pintura","Descricao":"Thinner Standard","Especificacao":"Standard","Unidade":"Litro","Quantidade":0.5,"Valor_Unit":12.8,"Total":6.4},{"Codigo_Projeto":"JNM.01-0004-COMP","Data":"2026-03-18","Categoria":"Servicos Extras","Descricao":"Desenvolvimento Projeto","Especificacao":"Desenho Técnico","Unidade":"unidade","Quantidade":1,"Valor_Unit":100,"Total":100},{"Codigo_Projeto":"JNM.02-0007-ADAP","Data":"2026-03-23","Categoria":"Servicos Extras","Descricao":"Desenvolvimento Projeto","Especificacao":"Desenho Técnico","Unidade":"unidade","Quantidade":1,"Valor_Unit":100,"Total":100},{"Codigo_Projeto":"JNM.01-0009-DISP","Data":"2026-03-23","Categoria":"Cortes a Laser e Dobras","Descricao":"Servico de Corte Laser","Especificacao":"ASTM A36","Unidade":"unidade","Quantidade":2,"Valor_Unit":450,"Total":900},{"Codigo_Projeto":"JNM.02-0009-ADAP","Data":"2026-03-24","Categoria":"Servicos Extras","Descricao":"Desenvolvimento Projeto","Especificacao":"Desenho Técnico","Unidade":"MS","Quantidade":2,"Valor_Unit":100,"Total":200},{"Codigo_Projeto":"JNM.01-0010-ADAP","Data":"2026-03-16","Categoria":"Servicos Extras","Descricao":"Desenvolvimento de Projeto Complexo","Especificacao":"Desenho Técnico","Unidade":"unidade","Quantidade":1,"Valor_Unit":500,"Total":500},{"Codigo_Projeto":"JNM.01-0010-ADAP","Data":"2026-03-12","Categoria":"Operacional","Descricao":"Deslocamento","Especificacao":"Km rodado","Unidade":"km","Quantidade":100,"Valor_Unit":1.3,"Total":130},{"Codigo_Projeto":"JNM.01-0010-ADAP","Data":"2026-03-26","Categoria":"Cortes a Laser e Dobras","Descricao":"Servico de Corte Laser","Especificacao":"ASTM A36","Unidade":"servico","Quantidade":1,"Valor_Unit":450,"Total":450},{"Codigo_Projeto":"JNM.01-0010-ADAP","Data":"2026-03-26","Categoria":"Operacional","Descricao":"Alimentação","Especificacao":"Almoço/Janta","Unidade":"unidade","Quantidade":2,"Valor_Unit":23,"Total":46},{"Codigo_Projeto":"JNM.01-0010-ADAP","Data":"2026-03-26","Categoria":"Servicos Extras","Descricao":"Usinagem CNC","Especificacao":"Diversas","Unidade":"hora","Quantidade":1,"Valor_Unit":180,"Total":180}],"maoDeObra":[{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Funcao":"Caldeireiro","Valor_Hora":16.51,"Horas":8,"Total":132.09},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Funcao":"Pintor","Valor_Hora":16.51,"Horas":4,"Total":66.04},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Funcao":"Torneiro","Valor_Hora":14.70,"Horas":2,"Total":29.41},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Funcao":"Projetista","Valor_Hora":16.64,"Horas":10,"Total":266.24},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Funcao":"Soldador","Valor_Hora":16.51,"Horas":8,"Total":132.09},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Funcao":"Engenheiro","Valor_Hora":16.64,"Horas":1,"Total":16.64},{"Codigo_Projeto":"JNM.01-0005-DISP","Data":"2026-02-25","Funcao":"Caldeireiro","Valor_Hora":16.51,"Horas":2,"Total":33.02},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Funcao":"Caldeireiro","Valor_Hora":16.51,"Horas":8,"Total":132.09},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Funcao":"Pintor","Valor_Hora":16.51,"Horas":4,"Total":66.04},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Funcao":"Torneiro","Valor_Hora":14.70,"Horas":2,"Total":29.41},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Funcao":"Soldador","Valor_Hora":16.51,"Horas":8,"Total":132.09},{"Codigo_Projeto":"JNM.01-0008-DISP","Data":"2026-03-17","Funcao":"Caldeireiro","Valor_Hora":16.51,"Horas":1,"Total":16.64},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-13","Funcao":"Projetista","Valor_Hora":16.64,"Horas":4,"Total":66.56},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-13","Funcao":"Caldeireiro","Valor_Hora":16.51,"Horas":2,"Total":33.02},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-13","Funcao":"Soldador","Valor_Hora":16.51,"Horas":16,"Total":264.17},{"Codigo_Projeto":"JNM.01-0003-ESTR","Data":"2026-03-16","Funcao":"Pintor","Valor_Hora":16.51,"Horas":6,"Total":99.06},{"Codigo_Projeto":"JNM.01-0004-COMP","Data":"2026-03-18","Funcao":"Projetista","Valor_Hora":16.64,"Horas":3,"Total":49.92},{"Codigo_Projeto":"JNM.01-0004-COMP","Data":"2026-03-23","Funcao":"Projetista","Valor_Hora":16.64,"Horas":2,"Total":33.28},{"Codigo_Projeto":"JNM.02-0009-ADAP","Data":"2026-03-24","Funcao":"Projetista","Valor_Hora":16.64,"Horas":2,"Total":33.28},{"Codigo_Projeto":"JNM.01-0010-ADAP","Data":"2026-03-23","Funcao":"Projetista","Valor_Hora":16.64,"Horas":8,"Total":133.12}],"categorias":["Ferro e Aco","Material de Apoio","Equipamentos","Material de Pintura","Material de Soldagem","Componentes de Ligacao","Servicos Extras","Cortes a Laser e Dobras","Operacional"],"funcoes":[{"funcao":"Soldador","valor":16.51},{"funcao":"Caldeireiro","valor":16.51},{"funcao":"Montador","valor":14.7},{"funcao":"Pintor","valor":16.51},{"funcao":"Torneiro","valor":14.70},{"funcao":"Projetista","valor":16.64},{"funcao":"Engenheiro","valor":16.64},{"funcao":"Mecanico","valor":16.51},{"funcao":"Eletricista","valor":16.51}],"status":["Planejamento","Em andamento","Concluido","Cancelado","Stand by"],"unidades":["Kg","metro","Litro","m2","unidade","servico","pacote","galao","chapa","barra","conjunto","kit","rolo","km","hora"],"localidades":[{"nome":"Adamantina - SP","cod":"JNM.01"},{"nome":"Três Lagoas - MS","cod":"JNM.02"}],"categoriasProjeto":[{"nome":"Dispositivos","cod":"DISP"},{"nome":"Ferramentas","cod":"FERR"},{"nome":"Estruturas","cod":"ESTR"},{"nome":"Proteções e Segurança","cod":"PROT"},{"nome":"Implementos Agrícolas","cod":"IMPL"},{"nome":"Componentes Mecânicos","cod":"COMP"},{"nome":"Adaptações e Modificações","cod":"ADAP"},{"nome":"Transporte e Logística","cod":"TRAN"}],"catalogo":[{"Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 20x20x2.00","Especificacao":"ASTM A36","Unidade":"metro","Preco_Medio":12.5},{"Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 30x30x2.00","Especificacao":"ASTM A36","Unidade":"metro","Preco_Medio":13.8},{"Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 40x40x2.00","Especificacao":"ASTM A36","Unidade":"metro","Preco_Medio":14.2},{"Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 50x50x3.00","Especificacao":"ASTM A36","Unidade":"metro","Preco_Medio":35.58},{"Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 60x60x3.00","Especificacao":"ASTM A36","Unidade":"metro","Preco_Medio":17.5},{"Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 70x70x4.75","Especificacao":"ASTM A36","Unidade":"metro","Preco_Medio":101.41},{"Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 90x90x4.75","Especificacao":"ASTM A36","Unidade":"metro","Preco_Medio":26.4},{"Categoria":"Ferro e Aco","Descricao":"Tubo Quadrado 100x100x4.75","Especificacao":"ASTM A36","Unidade":"metro","Preco_Medio":30.1},{"Categoria":"Ferro e Aco","Descricao":"Chapa 1/8\" (3,17mm)","Especificacao":"ASTM A36","Unidade":"m²","Preco_Medio":10.8},{"Categoria":"Ferro e Aco","Descricao":"Chapa 3/16\" (4,76mm)","Especificacao":"ASTM A36","Unidade":"m²","Preco_Medio":137.5},{"Categoria":"Ferro e Aco","Descricao":"Chapa 1/4\" (6,35mm)","Especificacao":"ASTM A36","Unidade":"m²","Preco_Medio":11.8},{"Categoria":"Componentes de Ligacao","Descricao":"Parafuso M8 x 25mm","Especificacao":"Zincado","Unidade":"unidade","Preco_Medio":0.45},{"Categoria":"Componentes de Ligacao","Descricao":"Rolamento 6205","Especificacao":"SKF/FAG","Unidade":"unidade","Preco_Medio":28.5},{"Categoria":"Componentes de Ligacao","Descricao":"Rodizio 150mm c/ freio","Especificacao":"Giratório","Unidade":"unidade","Preco_Medio":145},{"Categoria":"Componentes de Ligacao","Descricao":"Rodizio 150mm s/ freio","Especificacao":"Giratório","Unidade":"unidade","Preco_Medio":136.78},{"Categoria":"Material de Soldagem","Descricao":"Eletrodo E6013 2,50mm","Especificacao":"AWS E6013","Unidade":"Kg","Preco_Medio":18.5},{"Categoria":"Material de Soldagem","Descricao":"Arame MIG ER70S-6 0,8mm","Especificacao":"ER70S-6","Unidade":"rolo","Preco_Medio":89},{"Categoria":"Material de Pintura","Descricao":"Tinta Primer Epoxi","Especificacao":"Cinza","Unidade":"Litro","Preco_Medio":38.5},{"Categoria":"Material de Pintura","Descricao":"Tinta Esmalte Industrial","Especificacao":"Diversas cores","Unidade":"Litro","Preco_Medio":27.1},{"Categoria":"Material de Pintura","Descricao":"Thinner Standard","Especificacao":"Standard","Unidade":"Litro","Preco_Medio":12.8},{"Categoria":"Cortes a Laser e Dobras","Descricao":"Servico de Corte Laser","Especificacao":"ASTM A36","Unidade":"servico","Preco_Medio":450},{"Categoria":"Cortes a Laser e Dobras","Descricao":"Dobra em Prensa","Especificacao":"Chapa metal","Unidade":"servico","Preco_Medio":85},{"Categoria":"Servicos Extras","Descricao":"Emissao ART11","Especificacao":"CREA","Unidade":"servico","Preco_Medio":1100},{"Categoria":"Servicos Extras","Descricao":"Usinagem CNC","Especificacao":"Diversas","Unidade":"hora","Preco_Medio":180},{"Categoria":"Servicos Extras","Descricao":"Plaqueta de Identificação","Especificacao":"Laser em Inox","Unidade":"unidade","Preco_Medio":70},{"Categoria":"Operacional","Descricao":"Deslocamento","Especificacao":"Km rodado","Unidade":"km","Preco_Medio":1.3},{"Categoria":"Operacional","Descricao":"Alimentação","Especificacao":"Almoço/Janta","Unidade":"unidade","Preco_Medio":23}]};
+
+// ── STORAGE — usa localStorage para PERSISTÊNCIA REAL entre sessões ─────────
+const STORE_KEY = 'jnm_app_v2';
+const USERS_KEY = 'jnm_users_v2';
+const SAVE_TIME_KEY = 'jnm_last_save';
+const GD_FILE_KEY  = 'jnm_gdrive_file_id';   // ID do arquivo no Drive
+
+function loadStore() {
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch(e) {}
+  return null;
+}
+function saveStore(data) {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+    localStorage.setItem(SAVE_TIME_KEY, new Date().toISOString());
+  } catch(e) {}
+}
+function getLastSaveTime() {
+  try { return localStorage.getItem(SAVE_TIME_KEY); } catch(e) { return null; }
+}
+
+// ── GOOGLE DRIVE MANAGER ──────────────────────────────────────────────────────
+const GD_CLIENT_ID  = '574279171972-h0ue2kf0c4c6hpe7je81r95iifb3bvtl.apps.googleusercontent.com';
+const GD_API_KEY    = 'AIzaSyCrBVWE6n3-Y4JwDo9DxhYnMCqkrIlZxeM';
+const GD_SCOPE      = 'https://www.googleapis.com/auth/drive.file';
+const GD_FILE_NAME  = 'JNM_Gestao_Projetos_dados.json';
+
+// Estado global do Drive (não React — evita re-renders desnecessários)
+let _gdTokenClient = null;
+let _gdAccessToken = null;
+let _gdFileId = null;
+let _gdReady = false;
+let _gdInitCallback = null;
+
+function gdGetStoredFileId() {
+  try { return localStorage.getItem(GD_FILE_KEY) || null; } catch(e) { return null; }
+}
+function gdSetStoredFileId(id) {
+  try { if(id) localStorage.setItem(GD_FILE_KEY, id); else localStorage.removeItem(GD_FILE_KEY); } catch(e) {}
+}
+
+// Carrega gapi + inicia tokenClient
+async function gdInit(onReady) {
+  _gdInitCallback = onReady;
+  _gdFileId = gdGetStoredFileId();
+
+  return new Promise((resolve) => {
+    const waitGsi = setInterval(() => {
+      if (window.google && window.google.accounts && window.gapi) {
+        clearInterval(waitGsi);
+        window.gapi.load('client', async () => {
+          try {
+            await window.gapi.client.init({ apiKey: GD_API_KEY, discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] });
+          } catch(e) {}
+          _gdTokenClient = window.google.accounts.oauth2.initTokenClient({
+            client_id: GD_CLIENT_ID,
+            scope: GD_SCOPE,
+            callback: (resp) => {
+              if (resp.access_token) {
+                _gdAccessToken = resp.access_token;
+                _gdReady = true;
+                if (_gdInitCallback) _gdInitCallback(true);
+              } else {
+                if (_gdInitCallback) _gdInitCallback(false);
+              }
+            }
+          });
+          _gdReady = false;
+          resolve();
+        });
+      }
+    }, 200);
+  });
+}
+
+function gdRequestAccess(callback) {
+  _gdInitCallback = callback;
+  if (_gdTokenClient) {
+    _gdTokenClient.requestAccessToken({ prompt: '' });
+  }
+}
+
+// Busca o arquivo pelo nome ou usa o ID salvo
+async function gdFindOrCreateFile(data) {
+  if (!_gdAccessToken) throw new Error('Não autenticado');
+  // Se já temos ID salvo, usa direto
+  if (_gdFileId) return _gdFileId;
+  // Busca pelo nome
+  const q = encodeURIComponent(`name='${GD_FILE_NAME}' and trashed=false`);
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)`, {
+    headers: { Authorization: 'Bearer ' + _gdAccessToken }
+  });
+  const json = await res.json();
+  if (json.files && json.files.length > 0) {
+    _gdFileId = json.files[0].id;
+    gdSetStoredFileId(_gdFileId);
+    return _gdFileId;
+  }
+  // Cria novo arquivo
+  const meta = { name: GD_FILE_NAME, mimeType: 'application/json' };
+  const body = JSON.stringify(data || {});
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(meta)], {type:'application/json'}));
+  form.append('file', new Blob([body], {type:'application/json'}));
+  const cr = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + _gdAccessToken },
+    body: form
+  });
+  const cj = await cr.json();
+  _gdFileId = cj.id;
+  gdSetStoredFileId(_gdFileId);
+  return _gdFileId;
+}
+
+// Lê dados do arquivo do Drive
+async function gdLoadData() {
+  if (!_gdAccessToken) throw new Error('Não autenticado');
+  const fileId = await gdFindOrCreateFile(null);
+  if (!fileId) throw new Error('Arquivo não encontrado');
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+    headers: { Authorization: 'Bearer ' + _gdAccessToken }
+  });
+  if (!res.ok) throw new Error('Erro ao ler arquivo do Drive');
+  const text = await res.text();
+  if (!text || text.trim() === '') return null;
+  return JSON.parse(text);
+}
+
+// Salva dados no Drive (atualiza o arquivo existente)
+async function gdSaveData(data) {
+  if (!_gdAccessToken) throw new Error('Não autenticado');
+  const fileId = await gdFindOrCreateFile(data);
+  const body = JSON.stringify({ ...data, savedAt: new Date().toISOString(), savedBy: data._user || 'sistema' });
+  const res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+    method: 'PATCH',
+    headers: { Authorization: 'Bearer ' + _gdAccessToken, 'Content-Type': 'application/json' },
+    body
+  });
+  if (!res.ok) throw new Error('Erro ao salvar no Drive');
+  return true;
+}
+
+// Verifica metadados do arquivo (para detectar conflito de versão)
+async function gdGetFileMeta() {
+  if (!_gdAccessToken || !_gdFileId) return null;
+  try {
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${_gdFileId}?fields=modifiedTime,lastModifyingUser`, {
+      headers: { Authorization: 'Bearer ' + _gdAccessToken }
+    });
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+// ── USERS STORAGE ─────────────────────────────────────────────────────────────
+const INITIAL_USERS = [
+  { id: 1, username: 'admin', password: 'jnm2026', name: 'Administrador', role: 'admin', email: 'admin@jnm.com.br' },
+  { id: 2, username: 'ricardo', password: 'jnm123', name: 'Ricardo Castelhano', role: 'user', email: 'ricardo@jnm.com.br' },
+  { id: 3, username: 'gabriel', password: 'jnm123', name: 'Gabriel', role: 'user', email: 'gabriel@jnm.com.br' },
+  { id: 4, username: 'fernando', password: 'jnm123', name: 'Fernando', role: 'user', email: 'fernando@jnm.com.br' },
+];
+function loadUsers() {
+  try { const r = localStorage.getItem(USERS_KEY); if(r) return JSON.parse(r); } catch(e) {}
+  return INITIAL_USERS;
+}
+function saveUsers(users) {
+  try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch(e) {}
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+const fmt = (n) => 'R$ ' + Number(n||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtN = (n) => Number(n||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+const today = () => new Date().toISOString().slice(0,10);
+const diffDays = (d1, d2) => Math.round((new Date(d2) - new Date(d1)) / 86400000);
+function getBadgeClass(status) {
+  const m = { 'Em andamento':'andamento','Concluido':'concluido','Cancelado':'cancelado','Stand by':'standby','Planejamento':'planejamento' };
+  return 'badge badge-' + (m[status] || 'andamento');
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  } catch(e) { return iso; }
+}
+// Formata data YYYY-MM-DD para DD/MM/YYYY (padrão brasileiro)
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  try {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return dateStr;
+  } catch(e) { return dateStr; }
+}
+
+// ── ICONS ─────────────────────────────────────────────────────────────────────
+const Icon = ({ name, size=16 }) => {
+  const icons = {
+    dashboard: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
+    projects: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>,
+    database: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>,
+    users: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
+    search: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+    plus: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+    edit: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+    trash: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>,
+    eye: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+    x: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+    logout: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+    alert: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+    download: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+    upload: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+    check: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>,
+    back: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+    book: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>,
+    settings: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>,
+    report: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+    mail: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+    key: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>,
+    save: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
+    refresh: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>,
+  };
+  return icons[name] || null;
+};
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function ToastContainer({ toasts }) {
+  return <div className="toast-container">{toasts.map(t => <div key={t.id} className={`toast ${t.type}`}><Icon name={t.type==='success'?'check':t.type==='error'?'alert':'alert'} size={16}/>{t.msg}</div>)}</div>;
+}
+
+// ── SAVE INDICATOR — Google Drive ────────────────────────────────────────────
+function SaveIndicator({ onSaveGDrive, gdStatus, lastSave, onBackupLocal }) {
+  // gdStatus: 'saved' | 'saving' | 'error' | 'offline'
+  const dotClass = gdStatus === 'saving' ? 'dot-drive saving' : gdStatus === 'error' ? 'dot-drive error' : 'dot-drive';
+  const label = gdStatus === 'saving' ? 'Salvando no Drive...' : gdStatus === 'error' ? 'Erro ao salvar' : lastSave ? 'Drive: ' + fmtDateTime(lastSave) : 'Google Drive';
+  return (
+    <div className="save-indicator" style={{gap:8}}>
+      <div className={dotClass}/>
+      <span style={{fontSize:11,color:'var(--text2)'}}>{label}</span>
+      {onSaveGDrive && (
+        <button onClick={onSaveGDrive} title="Salvar agora no Google Drive"
+          style={{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:6,
+            color:'var(--accent)',padding:'2px 8px',display:'flex',alignItems:'center',
+            gap:4,fontSize:11,fontWeight:600,cursor:'pointer',marginLeft:2}}>
+          <Icon name="save" size={13}/>Salvar
+        </button>
+      )}
+      {onBackupLocal && (
+        <button onClick={onBackupLocal} title="Baixar backup JSON local"
+          style={{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:6,
+            color:'var(--text3)',padding:'2px 8px',display:'flex',alignItems:'center',
+            gap:4,fontSize:11,fontWeight:600,cursor:'pointer'}}>
+          <Icon name="download" size={13}/>Backup
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── GOOGLE DRIVE STARTUP SCREEN ───────────────────────────────────────────────
+function GDriveStartup({ onDataLoaded, onUseSeed }) {
+  const [phase, setPhase] = useState('init'); // init | connecting | connected | loading | conflict | error
+  const [gdUser, setGdUser] = useState(null);
+  const [conflictInfo, setConflictInfo] = useState(null);
+  const [driveData, setDriveData] = useState(null);
+  const [errMsg, setErrMsg] = useState('');
+  const [loadingMsg, setLoadingMsg] = useState('');
+  const fileRef = useRef();
+
+  useEffect(() => {
+    gdInit(() => {}).then(() => setPhase('ready'));
+  }, []);
+
+  const handleConnect = () => {
+    setPhase('connecting');
+    setErrMsg('');
+    gdRequestAccess(async (ok) => {
+      if (!ok) { setPhase('ready'); setErrMsg('Acesso negado ou cancelado.'); return; }
+      // Pega info do usuário
+      try {
+        const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: 'Bearer ' + _gdAccessToken }
+        });
+        const u = await info.json();
+        setGdUser(u);
+      } catch(e) {}
+      setPhase('connected');
+    });
+  };
+
+  const handleLoadDrive = async () => {
+    setPhase('loading');
+    setLoadingMsg('Buscando dados no Google Drive...');
+    try {
+      const data = await gdLoadData();
+      if (!data || !data.projects) {
+        // Arquivo vazio ou novo — pergunta se usa seed
+        setDriveData(null);
+        setPhase('empty');
+        return;
+      }
+      // Verifica se há dados locais mais recentes (conflito)
+      const localTime = getLastSaveTime();
+      const driveTime = data.savedAt;
+      if (localTime && driveTime && new Date(localTime) > new Date(driveTime)) {
+        setConflictInfo({ localTime, driveTime, driveUser: data.savedBy });
+        setDriveData(data);
+        setPhase('conflict');
+        return;
+      }
+      onDataLoaded(data, 'drive');
+    } catch(e) {
+      setErrMsg('Erro ao carregar dados: ' + e.message);
+      setPhase('connected');
+    }
+  };
+
+  const handleUseBackup = (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.projects) { setErrMsg('Arquivo inválido.'); return; }
+        onDataLoaded(data, 'backup');
+      } catch(err) { setErrMsg('Erro ao ler arquivo JSON.'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const GoogleIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+  );
+
+  const DriveIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 87.3 78">
+      <path fill="#0066da" d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L28.1 53H0c0 1.55.4 3.1 1.2 4.5z"/>
+      <path fill="#00ac47" d="M43.65 25L29.35 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 48.5c-.8 1.4-1.2 2.95-1.2 4.5h28.1z"/>
+      <path fill="#ea4335" d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75L86.1 57c.8-1.4 1.2-2.95 1.2-4.5H59.2l6 14.5z"/>
+      <path fill="#00832d" d="M43.65 25L57.95 0H29.35z"/>
+      <path fill="#2684fc" d="M59.2 52.5H28.1L13.8 76.8h59.7z"/>
+      <path fill="#ffba00" d="M86.1 57l-14.3-24.85c-.8-1.4-1.95-2.5-3.3-3.3L57.95 25 43.65 49.5l15.55 3 14.3 0z"/>
+    </svg>
+  );
+
+  return (
+    <div className="startup-overlay">
+      <div className="startup-box">
+        <div style={{marginBottom:24,textAlign:'center'}}>
+          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:34,color:'var(--accent)'}}>JNM</span>
+          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,color:'var(--text2)',marginLeft:10}}>Gestão de Projetos</span>
+          <div style={{fontSize:11,color:'var(--text3)',marginTop:4,textTransform:'uppercase',letterSpacing:'0.1em'}}>v2.5 — Cloud Edition</div>
+        </div>
+
+        {/* Fase: não conectado */}
+        {(phase === 'init' || phase === 'ready') && (
+          <>
+            <h2 style={{marginBottom:8}}>Conectar ao Google Drive</h2>
+            <p style={{color:'var(--text2)',fontSize:13,marginBottom:20,lineHeight:1.5}}>
+              Os dados são armazenados diretamente no seu Google Drive, compartilhados entre todos os usuários em tempo real.
+            </p>
+            {errMsg && <div className="err">{errMsg}</div>}
+            <button className="gdrive-btn" onClick={handleConnect} disabled={phase==='init'}>
+              <GoogleIcon/> {phase==='init' ? 'Carregando...' : 'Entrar com Google'}
+            </button>
+            <div style={{borderTop:'1px solid var(--border)',paddingTop:16,marginTop:8}}>
+              <p style={{color:'var(--text3)',fontSize:12,marginBottom:10}}>Ou carregar um backup local (.json):</p>
+              <input type="file" ref={fileRef} accept=".json" style={{display:'none'}} onChange={handleUseBackup}/>
+              <button className="btn btn-secondary btn-full" style={{fontSize:13}} onClick={()=>fileRef.current.click()}>
+                <Icon name="upload" size={14}/>Carregar Backup JSON
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Fase: conectando */}
+        {phase === 'connecting' && (
+          <div style={{textAlign:'center',padding:'20px 0'}}>
+            <div style={{fontSize:14,color:'var(--text2)',marginBottom:8}}>Aguardando autorização Google...</div>
+            <div style={{fontSize:12,color:'var(--text3)'}}>Uma janela pop-up deve ter aberto. Faça login com sua conta Google.</div>
+          </div>
+        )}
+
+        {/* Fase: conectado — pronto para carregar */}
+        {phase === 'connected' && (
+          <>
+            {gdUser && (
+              <div className="gdrive-status">
+                <GoogleIcon/>
+                <span>Conectado como <strong>{gdUser.name || gdUser.email}</strong></span>
+              </div>
+            )}
+            {errMsg && <div className="err">{errMsg}</div>}
+            <button className="btn btn-primary btn-full" style={{marginBottom:12,fontSize:14,padding:'12px 20px'}} onClick={handleLoadDrive}>
+              <DriveIcon style={{marginRight:4}}/> Abrir dados do Google Drive
+            </button>
+            <button className="btn btn-secondary btn-full" style={{fontSize:13}} onClick={()=>setPhase('ready')}>
+              <Icon name="back" size={14}/>Trocar conta Google
+            </button>
+          </>
+        )}
+
+        {/* Fase: carregando */}
+        {phase === 'loading' && (
+          <div style={{textAlign:'center',padding:'20px 0'}}>
+            <div style={{fontSize:14,color:'var(--accent)',marginBottom:8,fontWeight:600}}>{loadingMsg || 'Carregando do Google Drive...'}</div>
+            <div style={{fontSize:12,color:'var(--text3)'}}>Aguarde...</div>
+          </div>
+        )}
+
+        {/* Fase: arquivo vazio/novo no Drive */}
+        {phase === 'empty' && (
+          <>
+            <div className="gdrive-warn">
+              <Icon name="alert" size={16}/>
+              <span>Nenhum dado encontrado no Drive. Iniciar novo banco de dados?</span>
+            </div>
+            <button className="btn btn-primary btn-full" style={{marginBottom:10}} onClick={()=>onDataLoaded(null,'seed')}>
+              <Icon name="database" size={14}/>Iniciar com dados padrão
+            </button>
+            <div style={{borderTop:'1px solid var(--border)',paddingTop:12,marginTop:4}}>
+              <p style={{color:'var(--text3)',fontSize:12,marginBottom:10}}>Ou restaurar um backup existente:</p>
+              <input type="file" ref={fileRef} accept=".json" style={{display:'none'}} onChange={handleUseBackup}/>
+              <button className="btn btn-secondary btn-full" style={{fontSize:13}} onClick={()=>fileRef.current.click()}>
+                <Icon name="upload" size={14}/>Carregar Backup JSON
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Fase: conflito de versão */}
+        {phase === 'conflict' && conflictInfo && (
+          <>
+            <div className="gdrive-warn">
+              <Icon name="alert" size={16}/>
+              <div>
+                <strong>Atenção: versão local mais recente detectada</strong><br/>
+                <span style={{fontSize:12}}>
+                  Seu navegador tem dados de <strong>{fmtDateTime(conflictInfo.localTime)}</strong> (mais recente)<br/>
+                  O Drive tem dados de <strong>{fmtDateTime(conflictInfo.driveTime)}</strong>
+                  {conflictInfo.driveUser ? ` (salvo por ${conflictInfo.driveUser})` : ''}
+                </span>
+              </div>
+            </div>
+            <p style={{color:'var(--text2)',fontSize:13,marginBottom:14}}>Qual versão deseja usar?</p>
+            <button className="btn btn-primary btn-full" style={{marginBottom:10}} onClick={()=>onDataLoaded(driveData,'drive')}>
+              <Icon name="download" size={14}/>Usar versão do Drive ({fmtDateTime(conflictInfo.driveTime)})
+            </button>
+            <button className="btn btn-secondary btn-full" onClick={()=>onDataLoaded(loadStore(),'local')}>
+              <Icon name="refresh" size={14}/>Usar minha versão local ({fmtDateTime(conflictInfo.localTime)})
+            </button>
+          </>
+        )}
+
+        {/* Rodapé */}
+        <p style={{marginTop:20,fontSize:11,color:'var(--text3)',textAlign:'center',borderTop:'1px solid var(--border)',paddingTop:12}}>
+          🔒 Dados salvos em arquivo privado no seu Google Drive. Auto-save a cada 60 segundos.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── LOGIN ────────────────────────────────────────────────────────────────────
+function Login({ onLogin, users }) {
+  const [u, setU] = useState('');
+  const [p, setP] = useState('');
+  const [err, setErr] = useState('');
+  const [mode, setMode] = useState('login'); // login | forgot | register
+  const [forgotUser, setForgotUser] = useState('');
+  const [forgotMsg, setForgotMsg] = useState('');
+  const [regForm, setRegForm] = useState({ username:'', name:'', email:'', password:'', confirm:'' });
+  const [regMsg, setRegMsg] = useState('');
+
+  const submit = () => {
+    const user = users.find(x => x.username === u && x.password === p);
+    if (user) onLogin(user);
+    else setErr('Usuário ou senha incorretos.');
+  };
+
+  const handleForgot = () => {
+    const user = users.find(x => x.username === forgotUser || x.email === forgotUser);
+    if (!user) { setForgotMsg('Usuário não encontrado.'); return; }
+    // Simula envio de e-mail — em produção integraria com API de e-mail
+    setForgotMsg(`✅ Simulação: A senha "${user.password}" seria enviada para ${user.email || 'e-mail não cadastrado'}. (Em produção, use servidor SMTP)`);
+  };
+
+  const handleRegister = () => {
+    if (!regForm.username || !regForm.name || !regForm.password) { setRegMsg('Preencha todos os campos obrigatórios.'); return; }
+    if (regForm.password !== regForm.confirm) { setRegMsg('As senhas não coincidem.'); return; }
+    if (users.length >= 10) { setRegMsg('Limite de 10 usuários atingido.'); return; }
+    if (users.find(x => x.username === regForm.username)) { setRegMsg('Nome de usuário já existe.'); return; }
+    // Seria registrado pelo admin — aqui mostra mensagem
+    setRegMsg(`✅ Solicitação de cadastro para "${regForm.name}" (${regForm.username}) registrada. Aguarde aprovação do administrador ou peça ao admin para adicionar via painel de Usuários.`);
+  };
+
+  if (mode === 'forgot') return (
+    <div className="login-wrap">
+      <div className="login-bg"/>
+      <div className="login-box">
+        <div className="login-logo"><span>JNM</span><p>Engenharia Industrial</p></div>
+        <h2>Recuperar Senha</h2>
+        <p style={{color:'var(--text2)',fontSize:13,marginBottom:16}}>Informe seu usuário ou e-mail cadastrado.</p>
+        {forgotMsg && <div className={forgotMsg.startsWith('✅') ? 'info-box' : 'err'}>{forgotMsg}</div>}
+        <div className="field"><label>Usuário ou E-mail</label><input value={forgotUser} onChange={e=>setForgotUser(e.target.value)} autoFocus/></div>
+        <button className="btn btn-primary btn-full" style={{marginBottom:10}} onClick={handleForgot}><Icon name="mail" size={15}/>Enviar Senha por E-mail</button>
+        <button className="btn btn-secondary btn-full" onClick={()=>setMode('login')}><Icon name="back" size={15}/>Voltar ao Login</button>
+      </div>
+    </div>
+  );
+
+  if (mode === 'register') return (
+    <div className="login-wrap">
+      <div className="login-bg"/>
+      <div className="login-box" style={{width:420}}>
+        <div className="login-logo"><span>JNM</span><p>Engenharia Industrial</p></div>
+        <h2>Solicitar Cadastro</h2>
+        {regMsg && <div className={regMsg.startsWith('✅') ? 'info-box' : 'err'}>{regMsg}</div>}
+        <div className="field"><label>Nome Completo *</label><input value={regForm.name} onChange={e=>setRegForm(v=>({...v,name:e.target.value}))}/></div>
+        <div className="field"><label>Nome de Usuário *</label><input value={regForm.username} onChange={e=>setRegForm(v=>({...v,username:e.target.value}))}/></div>
+        <div className="field"><label>E-mail</label><input type="email" value={regForm.email} onChange={e=>setRegForm(v=>({...v,email:e.target.value}))}/></div>
+        <div className="field"><label>Senha *</label><input type="password" value={regForm.password} onChange={e=>setRegForm(v=>({...v,password:e.target.value}))}/></div>
+        <div className="field"><label>Confirmar Senha *</label><input type="password" value={regForm.confirm} onChange={e=>setRegForm(v=>({...v,confirm:e.target.value}))}/></div>
+        <button className="btn btn-primary btn-full" style={{marginBottom:10}} onClick={handleRegister}><Icon name="check" size={15}/>Solicitar Cadastro</button>
+        <button className="btn btn-secondary btn-full" onClick={()=>setMode('login')}><Icon name="back" size={15}/>Voltar</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="login-wrap">
+      <div className="login-bg"/>
+      <div className="login-box">
+        <div className="login-logo"><span>JNM</span><p>Engenharia Industrial</p></div>
+        <h2>Acesso ao Sistema</h2>
+        {err && <div className="err">{err}</div>}
+        <div className="field"><label>Usuário</label><input value={u} onChange={e=>setU(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} autoFocus/></div>
+        <div className="field"><label>Senha</label><input type="password" value={p} onChange={e=>setP(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/></div>
+        <button className="btn btn-primary btn-full" style={{marginTop:8,marginBottom:12}} onClick={submit}>Entrar</button>
+        <div style={{display:'flex',justifyContent:'space-between',marginTop:4}}>
+          <button style={{background:'none',border:'none',color:'var(--text3)',fontSize:12,cursor:'pointer'}} onClick={()=>setMode('forgot')}>Esqueci a senha</button>
+          <button style={{background:'none',border:'none',color:'var(--text3)',fontSize:12,cursor:'pointer'}} onClick={()=>setMode('register')}>Solicitar cadastro</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── SIDEBAR ──────────────────────────────────────────────────────────────────
+function Sidebar({ page, setPage, user, onLogout }) {
+  const nav = [
+    { key:'dashboard', label:'Dashboard', icon:'dashboard', section:'PRINCIPAL' },
+    { key:'projects', label:'Projetos', icon:'projects' },
+    { key:'project-new', label:'Novo Projeto', icon:'plus' },
+    { key:'database', label:'Configurações BD', icon:'database', section:'CADASTROS' },   // C.1
+    { key:'catalog', label:'Catálogo de Materiais', icon:'book' },                         // C.2
+    { key:'users', label:'Usuários', icon:'users', section:'SISTEMA' },
+    { key:'reports', label:'Relatórios', icon:'report' },
+    { key:'backup', label:'Backup / Importar', icon:'download' },
+  ];
+  let lastSection = null;
+  return (
+    <div className="sidebar">
+      <div className="sidebar-logo">
+        <div className="brand">JNM</div>
+        <div className="sub">Gestão de Projetos v2.5</div>
+      </div>
+      <nav className="sidebar-nav">
+        {nav.map(item => {
+          const showSection = item.section && item.section !== lastSection;
+          if (item.section) lastSection = item.section;
+          return (
+            <React.Fragment key={item.key}>
+              {showSection && <div className="nav-section">{item.section}</div>}
+              <div className={`nav-item ${page===item.key||page.startsWith(item.key+'-')?'active':''}`} onClick={()=>setPage(item.key)}>
+                <Icon name={item.icon} size={18}/>{item.label}
+              </div>
+            </React.Fragment>
+          );
+        })}
+      </nav>
+      <div className="sidebar-footer">
+        <div className="user-info">
+          <div className="user-avatar">{user.name[0]}</div>
+          <div style={{flex:1}}>
+            <div className="user-name">{user.name}</div>
+            <div className="user-role">{user.role}</div>
+          </div>
+          <button className="btn btn-icon" onClick={onLogout} title="Sair" style={{background:'none',color:'var(--text3)'}}>
+            <Icon name="logout" size={18}/>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── DONUT CHART ──────────────────────────────────────────────────────────────
+function Donut({ data, size=120 }) {
+  const total = data.reduce((s,d)=>s+d.value,0);
+  let offset = 0;
+  const r = 45, circ = 2 * Math.PI * r;
+  const slices = data.map(d => {
+    const pct = total ? d.value/total : 0;
+    const len = pct * circ;
+    const slice = { ...d, offset, len: Math.max(0, len-2) };
+    offset += len;
+    return slice;
+  });
+  return (
+    <div className="donut-wrap">
+      <svg className="donut-svg" width={size} height={size} viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r={r} fill="none" stroke="var(--bg2)" strokeWidth="12"/>
+        {slices.map((s,i) => (
+          <circle key={i} cx="50" cy="50" r={r} fill="none" stroke={s.color} strokeWidth="12"
+            strokeDasharray={`${s.len} ${circ-s.len}`}
+            strokeDashoffset={circ/4 - s.offset}
+            style={{transform:'rotate(-90deg)',transformOrigin:'50px 50px'}}/>
+        ))}
+        <text x="50" y="47" textAnchor="middle" fill="var(--text)" fontSize="14" fontWeight="700" fontFamily="Barlow Condensed">{total}</text>
+        <text x="50" y="58" textAnchor="middle" fill="var(--text3)" fontSize="8">projetos</text>
+      </svg>
+      <div className="donut-legend">
+        {data.map((d,i) => (
+          <div key={i} className="legend-item">
+            <div className="legend-dot" style={{background:d.color}}/>
+            <span style={{color:'var(--text2)'}}>{d.label}</span>
+            <strong style={{marginLeft:'auto',paddingLeft:12}}>{d.value}</strong>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── PARETO CHART COMPONENT ───────────────────────────────────────────────────
+function ParetoChart({ data, barColor }) {
+  if (!data || data.length === 0) return React.createElement('div', {className:'empty'}, React.createElement('p', null, 'Sem dados para exibir.'));
+  const total = data.reduce((s, d) => s + d.value, 0);
+  let cumSum = 0;
+  const items = data.map(d => {
+    cumSum += d.value;
+    return { ...d, cumPct: total > 0 ? (cumSum / total) * 100 : 0 };
+  });
+  const maxVal = items[0]?.value || 1;
+  const chartH = 160;
+  const n = items.length;
+  const barW = Math.max(24, Math.min(52, Math.floor(400 / n) - 6));
+  const totalW = 44 + n * (barW + 6) + 10;
+
+  return (
+    <div style={{overflowX:'auto',paddingBottom:4}}>
+      <svg width={Math.max(totalW,300)} height={chartH+76} style={{display:'block',margin:'0 auto',overflow:'visible'}}>
+        {[0,25,50,75,100].map(pct => {
+          const y = chartH - (pct/100)*chartH + 10;
+          return <g key={pct}>
+            <line x1={38} y1={y} x2={totalW-4} y2={y} stroke="var(--border)" strokeWidth="1" strokeDasharray={pct===0?'0':'3,3'}/>
+            <text x={34} y={y+4} textAnchor="end" fontSize="9" fill="var(--text3)">{pct}%</text>
+          </g>;
+        })}
+        {items.map((d,i) => {
+          const barH = Math.max(2,(d.value/maxVal)*chartH);
+          const x = 42 + i*(barW+6);
+          const y = chartH - barH + 10;
+          const maxChars = Math.max(4, Math.floor(barW/4.5));
+          const lbl = d.label && d.label.length > maxChars ? d.label.slice(0,maxChars-1)+'…' : (d.label||'');
+          return <g key={i}>
+            <rect x={x} y={y} width={barW} height={barH} fill={barColor||'var(--accent)'} opacity="0.85" rx="2"/>
+            <text x={x+barW/2} y={y-3} textAnchor="middle" fontSize="8" fill="var(--text2)" fontFamily="'Barlow Condensed',sans-serif">{Number(d.value).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0})}</text>
+            <foreignObject x={x} y={chartH+13} width={barW} height={48}>
+              <div xmlns="http://www.w3.org/1999/xhtml" style={{fontSize:'8px',color:'var(--text3)',wordBreak:'break-word',textAlign:'center',lineHeight:'1.25',overflow:'hidden',maxHeight:'46px'}} title={d.label}>{lbl}</div>
+            </foreignObject>
+          </g>;
+        })}
+        {items.length>1 && <polyline
+          points={items.map((d,i)=>`${42+i*(barW+6)+barW/2},${chartH-(d.cumPct/100)*chartH+10}`).join(' ')}
+          fill="none" stroke="#e74c3c" strokeWidth="2" strokeLinejoin="round"/>}
+        {items.map((d,i) => {
+          const x = 42+i*(barW+6)+barW/2;
+          const y = chartH-(d.cumPct/100)*chartH+10;
+          return <g key={i}>
+            <circle cx={x} cy={y} r="3" fill="#e74c3c"/>
+            <text x={x} y={y-5} textAnchor="middle" fontSize="8" fill="#e74c3c">{Math.round(d.cumPct)}%</text>
+          </g>;
+        })}
+        <line x1={totalW-68} y1={8} x2={totalW-55} y2={8} stroke="#e74c3c" strokeWidth="2"/>
+        <circle cx={totalW-61} cy={8} r="3" fill="#e74c3c"/>
+        <text x={totalW-51} y={12} fontSize="9" fill="var(--text3)">% Acum.</text>
+      </svg>
+    </div>
+  );
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────────
+function Dashboard({ projects, materials, maoDeObra, setPage, setDetailCode }) {
+  const todayStr = today();
+  const [paretoMatField, setParetoMatField] = useState('Categoria');
+  const [paretoMOField, setParetoMOField] = useState('Funcao');
+  const [paretoMatTop, setParetoMatTop] = useState(8);
+  const [paretoMOTop, setParetoMOTop] = useState(8);
+
+  const stats = useMemo(() => {
+    const andamento = projects.filter(p=>p.Status==='Em andamento').length;
+    const concluido = projects.filter(p=>p.Status==='Concluido').length;
+    const cancelado = projects.filter(p=>p.Status==='Cancelado').length;
+    const standby = projects.filter(p=>['Stand by','Planejamento'].includes(p.Status)).length;
+    const totalMat = materials.reduce((s,m)=>s+(m.Total||0),0);
+    const totalMO = maoDeObra.reduce((s,m)=>s+(m.Total||0),0);
+    return { andamento, concluido, cancelado, standby, total: totalMat+totalMO, totalMat, totalMO };
+  }, [projects, materials, maoDeObra]);
+
+  const alerts = useMemo(() => {
+    const list = [];
+    projects.filter(p=>p.Status==='Em andamento').forEach(p => {
+      if (!p.Data_Prev_Termino) return;
+      const diff = diffDays(todayStr, p.Data_Prev_Termino);
+      if (diff < 0) list.push({ type:'error', title: p.Nome_Projeto, sub: `Atrasado ${Math.abs(diff)} dias — Prazo: ${fmtDate(p.Data_Prev_Termino)}`, code: p.Codigo });
+      else if (diff <= 7) list.push({ type:'warn', title: p.Nome_Projeto, sub: `Vence em ${diff} dias — Prazo: ${fmtDate(p.Data_Prev_Termino)}`, code: p.Codigo });
+    });
+    return list;
+  }, [projects]);
+
+  const projCosts = useMemo(() => projects.map(p => {
+    const mat = materials.filter(m=>m.Codigo_Projeto===p.Codigo).reduce((s,m)=>s+(m.Total||0),0);
+    const mo = maoDeObra.filter(m=>m.Codigo_Projeto===p.Codigo).reduce((s,m)=>s+(m.Total||0),0);
+    return { code: p.Codigo, name: p.Nome_Projeto, total: mat+mo };
+  }).sort((a,b)=>b.total-a.total).slice(0,7), [projects, materials, maoDeObra]);
+
+  const paretoMatData = useMemo(() => {
+    const map = {};
+    materials.forEach(m => { const k = m[paretoMatField]||'(vazio)'; map[k]=(map[k]||0)+(m.Total||0); });
+    return Object.entries(map).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,paretoMatTop);
+  }, [materials, paretoMatField, paretoMatTop]);
+
+  const paretoMOData = useMemo(() => {
+    const map = {};
+    maoDeObra.forEach(m => { const k = m[paretoMOField]||'(vazio)'; map[k]=(map[k]||0)+(m.Total||0); });
+    return Object.entries(map).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,paretoMOTop);
+  }, [maoDeObra, paretoMOField, paretoMOTop]);
+
+  const maxProjCost = projCosts[0]?.total || 1;
+  const donutData = [
+    { label: 'Em andamento', value: stats.andamento, color: '#4a90d9' },
+    { label: 'Concluídos', value: stats.concluido, color: '#27ae60' },
+    { label: 'Standby/Plan.', value: stats.standby, color: '#f39c12' },
+    { label: 'Cancelados', value: stats.cancelado, color: '#e74c3c' },
+  ];
+  const selStyle = {background:'var(--bg2)',border:'1px solid var(--border)',color:'var(--text)',padding:'4px 8px',borderRadius:'var(--radius)',fontSize:12,outline:'none'};
+
+  return (
+    <div>
+      <div className="topbar"><h1 className="page-title">Dashboard <span>KPI</span></h1><span style={{color:'var(--text3)',fontSize:13}}>{fmtDate(todayStr)}</span></div>
+      <div className="stats-grid">
+        <div className="stat-card orange"><div className="stat-label">Total de Projetos</div><div className="stat-value">{projects.length}</div><div className="stat-sub">cadastrados</div></div>
+        <div className="stat-card blue"><div className="stat-label">Em Andamento</div><div className="stat-value">{stats.andamento}</div><div className="stat-sub">em execução</div></div>
+        <div className="stat-card green"><div className="stat-label">Custo Total</div><div className="stat-value" style={{fontSize:22}}>{fmt(stats.total)}</div><div className="stat-sub">materiais + mão de obra</div></div>
+        <div className="stat-card red"><div className="stat-label">Alertas</div><div className="stat-value">{alerts.length}</div><div className="stat-sub">{alerts.filter(a=>a.type==='error').length} atrasados</div></div>
+      </div>
+      <div className="stats-grid" style={{gridTemplateColumns:'repeat(3,1fr)'}}>
+        <div className="stat-card blue"><div className="stat-label">Materiais e Serviços</div><div className="stat-value" style={{fontSize:20}}>{fmt(stats.totalMat)}</div></div>
+        <div className="stat-card purple"><div className="stat-label">Mão de Obra</div><div className="stat-value" style={{fontSize:20}}>{fmt(stats.totalMO)}</div></div>
+        <div className="stat-card green"><div className="stat-label">Concluídos</div><div className="stat-value">{stats.concluido}</div></div>
+      </div>
+      {alerts.length > 0 && (
+        <div className="chart-card" style={{marginBottom:16}}>
+          <h3>⚠️ Alertas de Prazo</h3>
+          <div className="alert-list">
+            {alerts.map((a,i) => (
+              <div key={i} className={`alert-item ${a.type}`} style={{cursor:'pointer'}} onClick={()=>{setDetailCode(a.code);setPage('project-detail');}}>
+                <Icon name="alert" size={18}/>
+                <div className="alert-content"><div className="alert-title">{a.title}</div><div className="alert-sub">{a.sub}</div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Linha 1: Donut + Custo por Projeto (padrão original mantido) */}
+      <div className="charts-grid" style={{marginBottom:16}}>
+        <div className="chart-card"><h3>Distribuição por Status</h3><Donut data={donutData}/></div>
+        <div className="chart-card">
+          <h3>Pareto de Custo por Projeto (Top 7)</h3>
+          <div className="bar-chart">
+            {projCosts.map((p,i) => (
+              <div key={i} className="bar-row" style={{cursor:'pointer'}} onClick={()=>{setDetailCode(p.code);setPage('project-detail');}}>
+                <div className="bar-label" title={p.name}><span style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,marginRight:6}}>{p.code}</span>{p.name}</div>
+                <div className="bar-track"><div className="bar-fill" style={{width:`${p.total/maxProjCost*100}%`,background:`hsl(${210+i*20},70%,55%)`}}/></div>
+                <div className="bar-val">{fmt(p.total)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      {/* Linha 2: Dois Paretos tradicionais lado a lado */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+        <div className="chart-card">
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10,flexWrap:'wrap',gap:6}}>
+            <h3 style={{margin:0,fontSize:13}}>Pareto — Materiais e Serviços</h3>
+            <div style={{display:'flex',gap:5,alignItems:'center',flexWrap:'wrap'}}>
+              <span style={{fontSize:10,color:'var(--text3)'}}>Agrupar:</span>
+              <select style={selStyle} value={paretoMatField} onChange={e=>setParetoMatField(e.target.value)}>
+                <option value="Categoria">Categoria</option>
+                <option value="Descricao">Descrição</option>
+                <option value="Codigo_Projeto">Projeto</option>
+              </select>
+              <select style={selStyle} value={paretoMatTop} onChange={e=>setParetoMatTop(+e.target.value)}>
+                <option value={5}>Top 5</option><option value={8}>Top 8</option><option value={10}>Top 10</option><option value={15}>Top 15</option>
+              </select>
+            </div>
+          </div>
+          <ParetoChart data={paretoMatData} barColor="var(--blue)"/>
+        </div>
+        <div className="chart-card">
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10,flexWrap:'wrap',gap:6}}>
+            <h3 style={{margin:0,fontSize:13}}>Pareto — Mão de Obra</h3>
+            <div style={{display:'flex',gap:5,alignItems:'center',flexWrap:'wrap'}}>
+              <span style={{fontSize:10,color:'var(--text3)'}}>Agrupar:</span>
+              <select style={selStyle} value={paretoMOField} onChange={e=>setParetoMOField(e.target.value)}>
+                <option value="Funcao">Função</option>
+                <option value="Codigo_Projeto">Projeto</option>
+              </select>
+              <select style={selStyle} value={paretoMOTop} onChange={e=>setParetoMOTop(+e.target.value)}>
+                <option value={5}>Top 5</option><option value={8}>Top 8</option><option value={10}>Top 10</option><option value={15}>Top 15</option>
+              </select>
+            </div>
+          </div>
+          <ParetoChart data={paretoMOData} barColor="var(--purple)"/>
+        </div>
+      </div>
+    </div>
+  );
+}
+// ── PROJECT FORM ─────────────────────────────────────────────────────────────
+function ProjectForm({ initial, onSave, onCancel, listas, user, computePreviewCode }) {
+  const [form, setForm] = useState(initial || {
+    Nome_Projeto:'', Cliente:'', Responsavel:'', Status:'Em andamento',
+    Data_Inicio:today(), Data_Prev_Termino:'', Data_Real_Termino:'',
+    Localidade: listas.localidades[0]?.nome||'', Cod_Localidade: listas.localidades[0]?.cod||'',
+    Categoria_Projeto: listas.categoriasProjeto[0]?.nome||'', Cod_Categoria: listas.categoriasProjeto[0]?.cod||'',
+    SubCategoria:'', Revisao:'REV00', Objetivo:'', Observacoes:''
+  });
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  const handleLocalidade = (nome) => { const l = listas.localidades.find(x=>x.nome===nome); set('Localidade',nome); set('Cod_Localidade',l?.cod||''); };
+  const handleCategoria = (nome) => { const c = listas.categoriasProjeto.find(x=>x.nome===nome); set('Categoria_Projeto',nome); set('Cod_Categoria',c?.cod||''); };
+  const isAdmin = user && user.role === 'admin';
+  const isEdit = !!(initial && initial.Codigo);
+  const previewCode = (!isEdit && computePreviewCode) ? computePreviewCode(form.Localidade, form.Categoria_Projeto) : null;
+
+  return (
+    <div className="form-grid">
+      {!isEdit && previewCode && (
+        <div className="span2" style={{background:'rgba(245,166,35,0.08)',border:'1px solid rgba(245,166,35,0.3)',borderRadius:'var(--radius)',padding:'10px 16px',display:'flex',alignItems:'center',gap:12,marginBottom:4}}>
+          <Icon name="key" size={15}/>
+          <div>
+            <div style={{fontSize:11,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:2}}>Código que será gerado</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:18,color:'var(--accent)',letterSpacing:'0.06em'}}>{previewCode}</div>
+          </div>
+        </div>
+      )}
+      {isEdit && (
+        <div className="field span2">
+          <label>Código do Projeto {isAdmin ? <span style={{color:'var(--accent)',fontSize:11,marginLeft:6}}>(admin: editável)</span> : <span style={{color:'var(--text3)',fontSize:11,marginLeft:6}}>(somente admin pode editar)</span>}</label>
+          <input value={form.Codigo||''} onChange={e=>set('Codigo',e.target.value)} disabled={!isAdmin}
+            style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:15,letterSpacing:'0.04em',
+              color:isAdmin?'var(--accent)':'var(--text3)',background:isAdmin?'var(--bg2)':'var(--bg)',
+              cursor:isAdmin?'text':'not-allowed'}}/>
+        </div>
+      )}
+      <div className="field span2"><label>Nome do Projeto *</label><input value={form.Nome_Projeto} onChange={e=>set('Nome_Projeto',e.target.value)}/></div>
+      <div className="field"><label>Cliente *</label><input value={form.Cliente} onChange={e=>set('Cliente',e.target.value)}/></div>
+      <div className="field"><label>Responsável</label><input value={form.Responsavel} onChange={e=>set('Responsavel',e.target.value)}/></div>
+      <div className="field"><label>Status</label><select value={form.Status} onChange={e=>set('Status',e.target.value)}>{listas.status.map(s=><option key={s}>{s}</option>)}</select></div>
+      <div className="field"><label>Revisão</label><input value={form.Revisao} onChange={e=>set('Revisao',e.target.value)}/></div>
+      <div className="field"><label>Localidade</label><select value={form.Localidade} onChange={e=>handleLocalidade(e.target.value)}>{listas.localidades.map(l=><option key={l.nome}>{l.nome}</option>)}</select></div>
+      <div className="field"><label>Categoria do Projeto</label><select value={form.Categoria_Projeto} onChange={e=>handleCategoria(e.target.value)}>{listas.categoriasProjeto.map(c=><option key={c.nome}>{c.nome}</option>)}</select></div>
+      <div className="field"><label>Sub-Categoria</label><input value={form.SubCategoria} onChange={e=>set('SubCategoria',e.target.value)}/></div>
+      <div className="field"><label>Data Início</label><input type="date" value={form.Data_Inicio} onChange={e=>set('Data_Inicio',e.target.value)}/></div>
+      <div className="field"><label>Prazo Previsto</label><input type="date" value={form.Data_Prev_Termino} onChange={e=>set('Data_Prev_Termino',e.target.value)}/></div>
+      <div className="field"><label>Data Real de Término</label><input type="date" value={form.Data_Real_Termino||''} onChange={e=>set('Data_Real_Termino',e.target.value)}/></div>
+      <div className="field span2"><label>Objetivo</label><textarea value={form.Objetivo||''} onChange={e=>set('Objetivo',e.target.value)}/></div>
+      <div className="field span2"><label>Observações</label><textarea value={form.Observacoes||''} onChange={e=>set('Observacoes',e.target.value)}/></div>
+      <div className="span2" style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+        <button className="btn btn-secondary" onClick={onCancel}>Cancelar</button>
+        <button className="btn btn-primary" onClick={()=>onSave(form)}>{isEdit ? 'Salvar Alterações' : 'Cadastrar Projeto'}</button>
+      </div>
+    </div>
+  );
+}
+
+// ── PROJECTS LIST ─────────────────────────────────────────────────────────────
+function ProjectsList({ projects, materials, maoDeObra, onView, onEdit, onDelete, listas, addProject, addToast, user }) {
+  const [search, setSearch] = useState(''); const [statusF, setStatusF] = useState(''); const [clienteF, setClienteF] = useState('');
+  const [showNew, setShowNew] = useState(false);
+  const filtered = useMemo(() => projects.filter(p => {
+    const q = search.toLowerCase();
+    if (q && !p.Codigo?.toLowerCase().includes(q) && !p.Nome_Projeto?.toLowerCase().includes(q) && !p.Cliente?.toLowerCase().includes(q)) return false;
+    if (statusF && p.Status !== statusF) return false;
+    if (clienteF && p.Cliente !== clienteF) return false;
+    return true;
+  }), [projects, search, statusF, clienteF]);
+  const clientes = [...new Set(projects.map(p=>p.Cliente).filter(Boolean))].sort();
+  const getCost = (code) => {
+    const mat = materials.filter(m=>m.Codigo_Projeto===code).reduce((s,m)=>s+(m.Total||0),0);
+    const mo = maoDeObra.filter(m=>m.Codigo_Projeto===code).reduce((s,m)=>s+(m.Total||0),0);
+    return mat + mo;
+  };
+  const computePreviewCode = (locNome, catNome) => {
+    const loc = listas.localidades.find(l => l.nome === locNome);
+    const codLoc = (loc ? loc.cod : 'JNM.01').replace('JNM ','JNM.');
+    const catEntry = listas.categoriasProjeto.find(c => c.nome === catNome);
+    let codCat;
+    if (catEntry && catEntry.cod) codCat = catEntry.cod;
+    else if (catNome) codCat = catNome.replace(/[^A-Za-z]/g,'').toUpperCase().slice(0,4).padEnd(4,'X');
+    else codCat = 'PROJ';
+    const nums = projects
+      .filter(p => (p.Cod_Localidade||'').replace('JNM ','JNM.') === codLoc)
+      .map(p => parseInt((p.Codigo||'').split('-')[1]||'0',10))
+      .filter(n => !isNaN(n) && n > 0);
+    const next = nums.length ? Math.max.apply(null,nums)+1 : 1;
+    return codLoc+'-'+String(next).padStart(4,'0')+'-'+codCat;
+  };
+
+  const handleSave = (form) => {
+    if (!form.Nome_Projeto || !form.Cliente) { addToast('Preencha Nome e Cliente.','error'); return; }
+    addProject(form); setShowNew(false); addToast('Projeto cadastrado!','success');
+  };
+  return (
+    <div>
+      <div className="topbar">
+        <h1 className="page-title">Projetos <span>({projects.length})</span></h1>
+        <button className="btn btn-primary" onClick={()=>setShowNew(true)}><Icon name="plus" size={15}/>Novo Projeto</button>
+      </div>
+      {showNew && (
+        <div className="table-wrap" style={{marginBottom:20,padding:24}}>
+          <h3 style={{marginBottom:20,fontSize:18}}>Novo Projeto</h3>
+          <ProjectForm listas={listas} onSave={handleSave} onCancel={()=>setShowNew(false)} user={user} computePreviewCode={computePreviewCode}/>
+        </div>
+      )}
+      <div className="filter-row">
+        <div className="search-bar" style={{flex:1,maxWidth:320}}>
+          <Icon name="search" size={15}/>
+          <input placeholder="Buscar por código, nome, cliente..." value={search} onChange={e=>setSearch(e.target.value)}/>
+        </div>
+        <select value={statusF} onChange={e=>setStatusF(e.target.value)}><option value="">Todos os Status</option>{listas.status.map(s=><option key={s}>{s}</option>)}</select>
+        <select value={clienteF} onChange={e=>setClienteF(e.target.value)}><option value="">Todos os Clientes</option>{clientes.map(c=><option key={c}>{c}</option>)}</select>
+        {(search||statusF||clienteF) && <button className="btn btn-sm btn-secondary" onClick={()=>{setSearch('');setStatusF('');setClienteF('');}}>Limpar</button>}
+      </div>
+      <div className="table-wrap">
+        <div style={{overflowX:'auto'}}>
+          <table>
+            <thead><tr><th>Código</th><th>Projeto</th><th>Cliente</th><th>Responsável</th><th>Status</th><th>Prazo</th><th>Custo Total</th><th>Ações</th></tr></thead>
+            <tbody>
+              {filtered.length === 0 && <tr><td colSpan={8}><div className="empty"><p>Nenhum projeto encontrado.</p></div></td></tr>}
+              {filtered.map(p => (
+                <tr key={p.Codigo}>
+                  <td><span className="td-mono" style={{color:'var(--accent)'}}>{p.Codigo}</span></td>
+                  <td style={{maxWidth:260}}><div style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.Nome_Projeto}</div></td>
+                  <td>{p.Cliente}</td>
+                  <td>{p.Responsavel}</td>
+                  <td><span className={getBadgeClass(p.Status)}>{p.Status}</span></td>
+                  <td style={{color: p.Data_Prev_Termino && p.Status==='Em andamento' && diffDays(today(),p.Data_Prev_Termino)<0 ? 'var(--red)' : 'var(--text2)', fontSize:13}}>{fmtDate(p.Data_Prev_Termino)||'—'}</td>
+                  <td><strong style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontSize:15}}>{fmt(getCost(p.Codigo))}</strong></td>
+                  <td>
+                    <div style={{display:'flex',gap:4}}>
+                      <button className="btn btn-sm btn-secondary btn-icon" title="Ver detalhes" onClick={()=>onView(p.Codigo)}><Icon name="eye" size={14}/></button>
+                      <button className="btn btn-sm btn-secondary btn-icon" title="Editar" onClick={()=>onEdit(p)}><Icon name="edit" size={14}/></button>
+                      <button className="btn btn-sm btn-danger btn-icon" title="Excluir" onClick={()=>onDelete(p.Codigo)}><Icon name="trash" size={14}/></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PROJECT DETAIL ───────────────────────────────────────────────────────────
+function ProjectDetail({ code, projects, materials, maoDeObra, listas, onBack, onEdit, updateMaterials, updateMO, addToast }) {
+  const project = projects.find(p=>p.Codigo===code);
+  const [tab, setTab] = useState('mat');
+  const [showAddMat, setShowAddMat] = useState(false);
+  const [showAddMO, setShowAddMO] = useState(false);
+  const [matForm, setMatForm] = useState({ Data:today(), Categoria:'', Descricao:'', Especificacao:'', Unidade:'unidade', Quantidade:1, Valor_Unit:0 });
+  const [moForm, setMoForm] = useState({ Data:today(), Funcao:'Soldador', Valor_Hora:16.51, Horas:1 });
+  // estado de edição inline
+  const [editMatIdx, setEditMatIdx] = useState(null);
+  const [editMatForm, setEditMatForm] = useState(null);
+  const [editMOIdx, setEditMOIdx] = useState(null);
+  const [editMOForm, setEditMOForm] = useState(null);
+  // pesquisa no catálogo ao adicionar material
+  const [catSearch, setCatSearch] = useState('');
+
+  if (!project) return <div className="empty"><p>Projeto não encontrado.</p></div>;
+  const projMat = materials.filter(m=>m.Codigo_Projeto===code);
+  const projMO = maoDeObra.filter(m=>m.Codigo_Projeto===code);
+  const totalMat = projMat.reduce((s,m)=>s+(m.Total||0),0);
+  const totalMO = projMO.reduce((s,m)=>s+(m.Total||0),0);
+
+  const handleFuncao = (funcao) => { const f = listas.funcoes.find(f=>f.funcao===funcao); setMoForm(v=>({...v,Funcao:funcao,Valor_Hora:f?.valor||v.Valor_Hora})); };
+  const handleCatalog = (desc) => { const item = listas.catalogo.find(c=>c.Descricao===desc); if(item) setMatForm(v=>({...v,Descricao:desc,Especificacao:item.Especificacao||'',Unidade:item.Unidade||'unidade',Valor_Unit:item.Preco_Medio||0})); else setMatForm(v=>({...v,Descricao:desc})); };
+  const saveMat = () => {
+    if (!matForm.Descricao) { addToast('Informe a descrição.','error'); return; }
+    const total = +(matForm.Quantidade * matForm.Valor_Unit).toFixed(2);
+    updateMaterials(m => [...m, { ...matForm, Codigo_Projeto:code, Total:total, id:uid() }]);
+    setMatForm({ Data:today(), Categoria:'', Descricao:'', Especificacao:'', Unidade:'unidade', Quantidade:1, Valor_Unit:0 });
+    setCatSearch('');
+    setShowAddMat(false); addToast('Material adicionado!','success');
+  };
+  const saveMO = () => {
+    const total = +(moForm.Horas * moForm.Valor_Hora).toFixed(2);
+    updateMO(m => [...m, { ...moForm, Codigo_Projeto:code, Total:total, id:uid() }]);
+    setMoForm({ Data:today(), Funcao:'Soldador', Valor_Hora:16.51, Horas:1 });
+    setShowAddMO(false); addToast('Mão de obra adicionada!','success');
+  };
+  // helpers para achar índice global pelo índice local do projeto
+  const getProjMatGlobalIdx = (localIdx) => { let c=-1; return materials.findIndex(x=>{ if(x.Codigo_Projeto===code) c++; return c===localIdx; }); };
+  const getProjMOGlobalIdx = (localIdx) => { let c=-1; return maoDeObra.findIndex(x=>{ if(x.Codigo_Projeto===code) c++; return c===localIdx; }); };
+  const delMat = (idx) => { const gi=getProjMatGlobalIdx(idx); updateMaterials(m=>m.filter((_,i)=>i!==gi)); };
+  const delMO  = (idx) => { const gi=getProjMOGlobalIdx(idx); updateMO(m=>m.filter((_,i)=>i!==gi)); };
+  // editar mat inline
+  const startEditMat = (idx) => { setEditMatIdx(idx); setEditMatForm({...projMat[idx]}); setShowAddMat(false); };
+  const saveEditMat = () => {
+    const total = +(editMatForm.Quantidade * editMatForm.Valor_Unit).toFixed(2);
+    const gi = getProjMatGlobalIdx(editMatIdx);
+    updateMaterials(m => m.map((x,i)=>i===gi?{...editMatForm,Total:total}:x));
+    setEditMatIdx(null); setEditMatForm(null); addToast('Material atualizado!','success');
+  };
+  // editar MO inline
+  const startEditMO = (idx) => { setEditMOIdx(idx); setEditMOForm({...projMO[idx]}); setShowAddMO(false); };
+  const saveEditMO = () => {
+    const total = +(editMOForm.Horas * editMOForm.Valor_Hora).toFixed(2);
+    const gi = getProjMOGlobalIdx(editMOIdx);
+    updateMO(m => m.map((x,i)=>i===gi?{...editMOForm,Total:total}:x));
+    setEditMOIdx(null); setEditMOForm(null); addToast('Mão de obra atualizada!','success');
+  };
+  // catálogo filtrado por categoria e por pesquisa de texto
+  const catMatFiltered = listas.catalogo
+    .filter(c=>(!matForm.Categoria||c.Categoria===matForm.Categoria)&&(!catSearch||c.Descricao.toLowerCase().includes(catSearch.toLowerCase())))
+    .sort((a,b)=>(a.Descricao||'').localeCompare(b.Descricao||'','pt-BR'));
+
+  return (
+    <div>
+      <div className="topbar">
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <button className="btn btn-secondary btn-sm" onClick={onBack}><Icon name="back" size={14}/>Voltar</button>
+          <h1 className="page-title" style={{fontSize:22}}>{project.Nome_Projeto}</h1>
+        </div>
+        <button className="btn btn-secondary" onClick={()=>onEdit(project)}><Icon name="edit" size={14}/>Editar Projeto</button>
+      </div>
+      <div className="proj-detail-header">
+        <div className="proj-code">{project.Codigo}</div>
+        <div className="proj-name">{project.Nome_Projeto}</div>
+        <div className="proj-meta">
+          <div className="proj-meta-item">Cliente: <strong>{project.Cliente}</strong></div>
+          <div className="proj-meta-item">Responsável: <strong>{project.Responsavel}</strong></div>
+          <div className="proj-meta-item">Status: <span className={getBadgeClass(project.Status)}>{project.Status}</span></div>
+          <div className="proj-meta-item">Localidade: <strong>{project.Localidade}</strong></div>
+          <div className="proj-meta-item">Categoria: <strong>{project.Categoria_Projeto}</strong></div>
+          <div className="proj-meta-item">Início: <strong>{fmtDate(project.Data_Inicio)}</strong></div>
+          <div className="proj-meta-item">Prazo: <strong>{fmtDate(project.Data_Prev_Termino)||'—'}</strong></div>
+          {project.Revisao && <div className="proj-meta-item">Rev: <strong>{project.Revisao}</strong></div>}
+        </div>
+        {project.Objetivo && <p style={{marginTop:12,fontSize:13,color:'var(--text2)'}}><strong>Objetivo:</strong> {project.Objetivo}</p>}
+        {project.Observacoes && <p style={{marginTop:6,fontSize:13,color:'var(--text3)'}}><strong>Obs:</strong> {project.Observacoes}</p>}
+        <div className="cost-summary">
+          <div className="cost-box"><div className="cost-box-label">Materiais e Serviços</div><div className="cost-box-value">{fmt(totalMat)}</div></div>
+          <div className="cost-box"><div className="cost-box-label">Mão de Obra</div><div className="cost-box-value">{fmt(totalMO)}</div></div>
+          <div className="cost-box" style={{borderColor:'var(--accent)'}}><div className="cost-box-label">Custo Total</div><div className="cost-box-value">{fmt(totalMat+totalMO)}</div></div>
+        </div>
+      </div>
+      <div className="tabs">
+        <div className={`tab ${tab==='mat'?'active':''}`} onClick={()=>setTab('mat')}>Materiais e Serviços ({projMat.length})</div>
+        <div className={`tab ${tab==='mo'?'active':''}`} onClick={()=>setTab('mo')}>Mão de Obra ({projMO.length})</div>
+      </div>
+      {tab==='mat' && (
+        <div className="table-wrap">
+          <div className="table-header"><h3>Materiais e Serviços</h3><button className="btn btn-primary btn-sm" onClick={()=>{setShowAddMat(!showAddMat);setEditMatIdx(null);}}><Icon name="plus" size={13}/>Adicionar</button></div>
+          {showAddMat && (
+            <div style={{padding:20,borderBottom:'1px solid var(--border)',background:'var(--bg2)'}}>
+              <div className="form-grid">
+                <div className="field"><label>Categoria</label><select value={matForm.Categoria} onChange={e=>setMatForm(v=>({...v,Categoria:e.target.value,Descricao:''}))}>  <option value="">— Selecione —</option>{listas.categorias.map(c=><option key={c}>{c}</option>)}</select></div>
+                <div className="field"><label>🔍 Pesquisar no Catálogo</label>
+                  <input placeholder="Digite para filtrar..." value={catSearch} onChange={e=>setCatSearch(e.target.value)} style={{marginBottom:4}}/>
+                  <select value={matForm.Descricao} onChange={e=>handleCatalog(e.target.value)} size={catSearch||matForm.Categoria?Math.min(5,catMatFiltered.length+1):1} style={{marginTop:2}}>
+                    <option value="">— {catMatFiltered.length} item(ns) —</option>
+                    {catMatFiltered.map((c,i)=><option key={i} value={c.Descricao}>{c.Descricao} ({c.Categoria})</option>)}
+                  </select>
+                </div>
+                <div className="field"><label>Descrição (manual)</label><input value={matForm.Descricao} onChange={e=>setMatForm(v=>({...v,Descricao:e.target.value}))}/></div>
+                <div className="field"><label>Especificação</label><input value={matForm.Especificacao} onChange={e=>setMatForm(v=>({...v,Especificacao:e.target.value}))}/></div>
+                <div className="field"><label>Unidade</label><select value={matForm.Unidade} onChange={e=>setMatForm(v=>({...v,Unidade:e.target.value}))}>{listas.unidades.map(u=><option key={u}>{u}</option>)}</select></div>
+                <div className="field"><label>Data</label><input type="date" value={matForm.Data} onChange={e=>setMatForm(v=>({...v,Data:e.target.value}))}/></div>
+                <div className="field"><label>Quantidade</label><input type="number" step="0.001" value={matForm.Quantidade} onChange={e=>setMatForm(v=>({...v,Quantidade:+e.target.value}))}/></div>
+                <div className="field"><label>Valor Unitário (R$)</label><input type="number" step="0.01" value={matForm.Valor_Unit} onChange={e=>setMatForm(v=>({...v,Valor_Unit:+e.target.value}))}/></div>
+                <div className="field"><label>Total</label><input readOnly value={fmt(matForm.Quantidade*matForm.Valor_Unit)} style={{color:'var(--accent)',fontWeight:700}}/></div>
+                <div style={{display:'flex',gap:8,alignItems:'flex-end'}}><button className="btn btn-success" onClick={saveMat}><Icon name="check" size={14}/>Salvar</button><button className="btn btn-secondary" onClick={()=>{setShowAddMat(false);setCatSearch('');}}>Cancelar</button></div>
+              </div>
+            </div>
+          )}
+          {/* Formulário de edição inline de material */}
+          {editMatIdx!==null && editMatForm && (
+            <div style={{padding:20,borderBottom:'1px solid var(--border)',background:'rgba(245,166,35,0.05)',borderLeft:'3px solid var(--accent)'}}>
+              <div style={{marginBottom:12,fontWeight:700,color:'var(--accent)',fontSize:13}}>✏️ Editando: {projMat[editMatIdx]?.Descricao}</div>
+              <div className="form-grid">
+                <div className="field"><label>Categoria</label><select value={editMatForm.Categoria} onChange={e=>setEditMatForm(v=>({...v,Categoria:e.target.value}))}><option value="">—</option>{listas.categorias.map(c=><option key={c}>{c}</option>)}</select></div>
+                <div className="field"><label>Descrição</label><input value={editMatForm.Descricao} onChange={e=>setEditMatForm(v=>({...v,Descricao:e.target.value}))}/></div>
+                <div className="field"><label>Especificação</label><input value={editMatForm.Especificacao||''} onChange={e=>setEditMatForm(v=>({...v,Especificacao:e.target.value}))}/></div>
+                <div className="field"><label>Unidade</label><select value={editMatForm.Unidade} onChange={e=>setEditMatForm(v=>({...v,Unidade:e.target.value}))}>{listas.unidades.map(u=><option key={u}>{u}</option>)}</select></div>
+                <div className="field"><label>Data</label><input type="date" value={editMatForm.Data||''} onChange={e=>setEditMatForm(v=>({...v,Data:e.target.value}))}/></div>
+                <div className="field"><label>Quantidade</label><input type="number" step="0.001" value={editMatForm.Quantidade} onChange={e=>setEditMatForm(v=>({...v,Quantidade:+e.target.value}))}/></div>
+                <div className="field"><label>Valor Unitário (R$)</label><input type="number" step="0.01" value={editMatForm.Valor_Unit} onChange={e=>setEditMatForm(v=>({...v,Valor_Unit:+e.target.value}))}/></div>
+                <div className="field"><label>Total Calculado</label><input readOnly value={fmt(editMatForm.Quantidade*editMatForm.Valor_Unit)} style={{color:'var(--accent)',fontWeight:700}}/></div>
+                <div style={{display:'flex',gap:8,alignItems:'flex-end'}}><button className="btn btn-primary" onClick={saveEditMat}><Icon name="check" size={14}/>Atualizar</button><button className="btn btn-secondary" onClick={()=>{setEditMatIdx(null);setEditMatForm(null);}}>Cancelar</button></div>
+              </div>
+            </div>
+          )}
+          <div style={{overflowX:'auto'}}>
+            <table>
+              <thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Especificação</th><th>Un.</th><th>Qtd.</th><th>Valor Unit.</th><th>Total</th><th></th></tr></thead>
+              <tbody>
+                {projMat.length===0 && <tr><td colSpan={9}><div className="empty"><p>Nenhum material lançado.</p></div></td></tr>}
+                {projMat.map((m,i) => (
+                  <tr key={i} style={editMatIdx===i?{background:'rgba(245,166,35,0.06)'}:{}}>
+                    <td style={{color:'var(--text3)',fontSize:12}}>{fmtDate(m.Data)}</td>
+                    <td><span style={{fontSize:11,background:'var(--bg2)',padding:'2px 8px',borderRadius:4,color:'var(--text2)'}}>{m.Categoria}</span></td>
+                    <td><strong>{m.Descricao}</strong></td>
+                    <td style={{color:'var(--text3)',fontSize:12}}>{m.Especificacao}</td>
+                    <td>{m.Unidade}</td>
+                    <td style={{textAlign:'right'}}>{fmtN(m.Quantidade)}</td>
+                    <td style={{textAlign:'right'}}>{fmt(m.Valor_Unit)}</td>
+                    <td style={{textAlign:'right'}}><strong style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontSize:15}}>{fmt(m.Total)}</strong></td>
+                    <td>
+                      <div style={{display:'flex',gap:3}}>
+                        <button className="btn btn-secondary btn-icon btn-sm" title="Editar" onClick={()=>startEditMat(i)}><Icon name="edit" size={13}/></button>
+                        <button className="btn btn-danger btn-icon btn-sm" title="Excluir" onClick={()=>delMat(i)}><Icon name="trash" size={13}/></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {projMat.length>0 && <tr style={{background:'var(--bg2)'}}><td colSpan={7} style={{textAlign:'right',fontWeight:700,color:'var(--text2)'}}>TOTAL MATERIAIS</td><td style={{textAlign:'right'}}><strong style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontSize:16}}>{fmt(totalMat)}</strong></td><td/></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      {tab==='mo' && (
+        <div className="table-wrap">
+          <div className="table-header"><h3>Mão de Obra</h3><button className="btn btn-primary btn-sm" onClick={()=>{setShowAddMO(!showAddMO);setEditMOIdx(null);}}><Icon name="plus" size={13}/>Adicionar</button></div>
+          {showAddMO && (
+            <div style={{padding:20,borderBottom:'1px solid var(--border)',background:'var(--bg2)'}}>
+              <div className="form-grid">
+                <div className="field"><label>Data</label><input type="date" value={moForm.Data} onChange={e=>setMoForm(v=>({...v,Data:e.target.value}))}/></div>
+                <div className="field"><label>Função *</label><select value={moForm.Funcao} onChange={e=>handleFuncao(e.target.value)}>{listas.funcoes.map(f=><option key={f.funcao}>{f.funcao}</option>)}</select></div>
+                <div className="field"><label>Valor/Hora (R$/h)</label><input type="number" step="0.01" value={moForm.Valor_Hora} onChange={e=>setMoForm(v=>({...v,Valor_Hora:+e.target.value}))}/></div>
+                <div className="field"><label>Horas Trabalhadas</label><input type="number" step="0.5" value={moForm.Horas} onChange={e=>setMoForm(v=>({...v,Horas:+e.target.value}))}/></div>
+                <div className="field"><label>Total</label><input readOnly value={fmt(moForm.Horas*moForm.Valor_Hora)} style={{color:'var(--accent)',fontWeight:700}}/></div>
+                <div style={{display:'flex',gap:8,alignItems:'flex-end'}}><button className="btn btn-success" onClick={saveMO}><Icon name="check" size={14}/>Salvar</button><button className="btn btn-secondary" onClick={()=>setShowAddMO(false)}>Cancelar</button></div>
+              </div>
+            </div>
+          )}
+          {/* Formulário de edição inline de MO */}
+          {editMOIdx!==null && editMOForm && (
+            <div style={{padding:20,borderBottom:'1px solid var(--border)',background:'rgba(245,166,35,0.05)',borderLeft:'3px solid var(--accent)'}}>
+              <div style={{marginBottom:12,fontWeight:700,color:'var(--accent)',fontSize:13}}>✏️ Editando: {projMO[editMOIdx]?.Funcao}</div>
+              <div className="form-grid">
+                <div className="field"><label>Data</label><input type="date" value={editMOForm.Data||''} onChange={e=>setEditMOForm(v=>({...v,Data:e.target.value}))}/></div>
+                <div className="field"><label>Função</label><select value={editMOForm.Funcao} onChange={e=>{const f=listas.funcoes.find(x=>x.funcao===e.target.value);setEditMOForm(v=>({...v,Funcao:e.target.value,Valor_Hora:f?.valor||v.Valor_Hora}));}}>{listas.funcoes.map(f=><option key={f.funcao}>{f.funcao}</option>)}</select></div>
+                <div className="field"><label>Valor/Hora (R$/h)</label><input type="number" step="0.01" value={editMOForm.Valor_Hora} onChange={e=>setEditMOForm(v=>({...v,Valor_Hora:+e.target.value}))}/></div>
+                <div className="field"><label>Horas</label><input type="number" step="0.5" value={editMOForm.Horas} onChange={e=>setEditMOForm(v=>({...v,Horas:+e.target.value}))}/></div>
+                <div className="field"><label>Total Calculado</label><input readOnly value={fmt(editMOForm.Horas*editMOForm.Valor_Hora)} style={{color:'var(--accent)',fontWeight:700}}/></div>
+                <div style={{display:'flex',gap:8,alignItems:'flex-end'}}><button className="btn btn-primary" onClick={saveEditMO}><Icon name="check" size={14}/>Atualizar</button><button className="btn btn-secondary" onClick={()=>{setEditMOIdx(null);setEditMOForm(null);}}>Cancelar</button></div>
+              </div>
+            </div>
+          )}
+          <table>
+            <thead><tr><th>Data</th><th>Função</th><th>Valor/Hora</th><th>Horas</th><th>Total</th><th></th></tr></thead>
+            <tbody>
+              {projMO.length===0 && <tr><td colSpan={6}><div className="empty"><p>Nenhuma mão de obra lançada.</p></div></td></tr>}
+              {projMO.map((m,i) => (
+                <tr key={i} style={editMOIdx===i?{background:'rgba(245,166,35,0.06)'}:{}}>
+                  <td style={{color:'var(--text3)',fontSize:12}}>{fmtDate(m.Data)}</td>
+                  <td><strong>{m.Funcao}</strong></td>
+                  <td>{fmt(m.Valor_Hora)}/h</td>
+                  <td>{m.Horas}h</td>
+                  <td><strong style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontSize:15}}>{fmt(m.Total)}</strong></td>
+                  <td>
+                    <div style={{display:'flex',gap:3}}>
+                      <button className="btn btn-secondary btn-icon btn-sm" title="Editar" onClick={()=>startEditMO(i)}><Icon name="edit" size={13}/></button>
+                      <button className="btn btn-danger btn-icon btn-sm" title="Excluir" onClick={()=>delMO(i)}><Icon name="trash" size={13}/></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {projMO.length>0 && <tr style={{background:'var(--bg2)'}}><td colSpan={4} style={{textAlign:'right',fontWeight:700,color:'var(--text2)'}}>TOTAL MÃO DE OBRA</td><td><strong style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontSize:16}}>{fmt(totalMO)}</strong></td><td/></tr>}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── CONFIGURAÇÕES BD (era "Banco de Dados") ── C.1 ───────────────────────────
+function DatabasePage({ listas, updateListas, addToast }) {
+  const [tab, setTab] = useState('funcoes');
+  // Funções
+  const [newFuncao, setNewFuncao] = useState(''); const [newValor, setNewValor] = useState('');
+  const [editFuncaoIdx, setEditFuncaoIdx] = useState(null);
+  const [editFuncaoForm, setEditFuncaoForm] = useState({funcao:'',valor:0});
+  // Categorias
+  const [newCat, setNewCat] = useState('');
+  const [editCatIdx, setEditCatIdx] = useState(null);
+  const [editCatVal, setEditCatVal] = useState('');
+
+  const addFuncao = () => {
+    if(!newFuncao) return;
+    updateListas(l=>({...l,funcoes:[...l.funcoes,{funcao:newFuncao,valor:+newValor}]}));
+    setNewFuncao(''); setNewValor(''); addToast('Função adicionada!','success');
+  };
+  const delFuncao = (i) => { if(!confirm('Excluir função?')) return; updateListas(l=>({...l,funcoes:l.funcoes.filter((_,ii)=>ii!==i)})); addToast('Função removida.','info'); };
+  const startEditFuncao = (i) => { setEditFuncaoIdx(i); setEditFuncaoForm({...listas.funcoes[i]}); };
+  const saveEditFuncao = () => {
+    if(!editFuncaoForm.funcao) return;
+    updateListas(l=>({...l,funcoes:l.funcoes.map((f,i)=>i===editFuncaoIdx?{...editFuncaoForm,valor:+editFuncaoForm.valor}:f)}));
+    setEditFuncaoIdx(null); addToast('Função atualizada!','success');
+  };
+
+  const addCategoria = () => {
+    if(!newCat) return;
+    updateListas(l=>({...l,categorias:[...l.categorias,newCat]}));
+    setNewCat(''); addToast('Categoria adicionada!','success');
+  };
+  const delCategoria = (i) => { if(!confirm('Excluir categoria?')) return; updateListas(l=>({...l,categorias:l.categorias.filter((_,ii)=>ii!==i)})); addToast('Categoria removida.','info'); };
+  const startEditCat = (i) => { setEditCatIdx(i); setEditCatVal(listas.categorias[i]); };
+  const saveEditCat = () => {
+    if(!editCatVal) return;
+    updateListas(l=>({...l,categorias:l.categorias.map((c,i)=>i===editCatIdx?editCatVal:c)}));
+    setEditCatIdx(null); addToast('Categoria atualizada!','success');
+  };
+
+  return (
+    <div>
+      <div className="topbar"><h1 className="page-title">Configurações <span>BD</span></h1></div>
+      <div className="tabs">
+        <div className={`tab ${tab==='funcoes'?'active':''}`} onClick={()=>setTab('funcoes')}>Funções / MO</div>
+        <div className={`tab ${tab==='categorias'?'active':''}`} onClick={()=>setTab('categorias')}>Categorias de Material</div>
+        <div className={`tab ${tab==='status'?'active':''}`} onClick={()=>setTab('status')}>Status</div>
+        <div className={`tab ${tab==='localidades'?'active':''}`} onClick={()=>setTab('localidades')}>Localidades</div>
+      </div>
+
+      {tab==='funcoes' && (
+        <div className="table-wrap">
+          <div className="table-header"><h3>Funções e Valores/Hora</h3></div>
+          <div style={{padding:16,display:'flex',gap:8,borderBottom:'1px solid var(--border)'}}>
+            <input style={{flex:1,background:'var(--bg2)',border:'1px solid var(--border)',color:'var(--text)',padding:'8px 12px',borderRadius:'var(--radius)',fontSize:14}} placeholder="Nome da função" value={newFuncao} onChange={e=>setNewFuncao(e.target.value)}/>
+            <input style={{width:140,background:'var(--bg2)',border:'1px solid var(--border)',color:'var(--text)',padding:'8px 12px',borderRadius:'var(--radius)',fontSize:14}} type="number" placeholder="R$/hora" value={newValor} onChange={e=>setNewValor(e.target.value)}/>
+            <button className="btn btn-primary" onClick={addFuncao}><Icon name="plus" size={14}/>Adicionar</button>
+          </div>
+          {editFuncaoIdx !== null && (
+            <div style={{padding:16,background:'rgba(245,166,35,0.06)',borderBottom:'1px solid var(--border)',display:'flex',gap:8,alignItems:'center'}}>
+              <span style={{fontSize:12,color:'var(--accent)',fontWeight:700,minWidth:80}}>✏️ Editando:</span>
+              <input style={{flex:1,background:'var(--bg2)',border:'1px solid var(--accent)',color:'var(--text)',padding:'8px 12px',borderRadius:'var(--radius)',fontSize:14}} value={editFuncaoForm.funcao} onChange={e=>setEditFuncaoForm(v=>({...v,funcao:e.target.value}))}/>
+              <input style={{width:140,background:'var(--bg2)',border:'1px solid var(--accent)',color:'var(--text)',padding:'8px 12px',borderRadius:'var(--radius)',fontSize:14}} type="number" value={editFuncaoForm.valor} onChange={e=>setEditFuncaoForm(v=>({...v,valor:e.target.value}))}/>
+              <button className="btn btn-primary btn-sm" onClick={saveEditFuncao}><Icon name="check" size={13}/>Salvar</button>
+              <button className="btn btn-secondary btn-sm" onClick={()=>setEditFuncaoIdx(null)}>Cancelar</button>
+            </div>
+          )}
+          <table>
+            <thead><tr><th>Função</th><th>Valor/Hora (R$)</th><th style={{textAlign:'center'}}>Ações</th></tr></thead>
+            <tbody>{listas.funcoes.map((f,i)=>(
+              <tr key={i} style={editFuncaoIdx===i?{background:'rgba(245,166,35,0.04)'}:{}}>
+                <td><strong>{f.funcao}</strong></td>
+                <td style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontSize:16}}>{fmt(f.valor)}/h</td>
+                <td>
+                  <div style={{display:'flex',gap:3,justifyContent:'center'}}>
+                    <button className="btn btn-secondary btn-icon btn-sm" title="Editar" onClick={()=>startEditFuncao(i)}><Icon name="edit" size={13}/></button>
+                    <button className="btn btn-danger btn-icon btn-sm" title="Excluir" onClick={()=>delFuncao(i)}><Icon name="trash" size={13}/></button>
+                  </div>
+                </td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </div>
+      )}
+
+      {tab==='categorias' && (
+        <div className="table-wrap">
+          <div className="table-header"><h3>Categorias de Material / Serviço</h3></div>
+          <div style={{padding:16,display:'flex',gap:8,borderBottom:'1px solid var(--border)'}}>
+            <input style={{flex:1,background:'var(--bg2)',border:'1px solid var(--border)',color:'var(--text)',padding:'8px 12px',borderRadius:'var(--radius)',fontSize:14}} placeholder="Nova categoria" value={newCat} onChange={e=>setNewCat(e.target.value)}/>
+            <button className="btn btn-primary" onClick={addCategoria}><Icon name="plus" size={14}/>Adicionar</button>
+          </div>
+          {editCatIdx !== null && (
+            <div style={{padding:16,background:'rgba(245,166,35,0.06)',borderBottom:'1px solid var(--border)',display:'flex',gap:8,alignItems:'center'}}>
+              <span style={{fontSize:12,color:'var(--accent)',fontWeight:700,minWidth:80}}>✏️ Editando:</span>
+              <input style={{flex:1,background:'var(--bg2)',border:'1px solid var(--accent)',color:'var(--text)',padding:'8px 12px',borderRadius:'var(--radius)',fontSize:14}} value={editCatVal} onChange={e=>setEditCatVal(e.target.value)}/>
+              <button className="btn btn-primary btn-sm" onClick={saveEditCat}><Icon name="check" size={13}/>Salvar</button>
+              <button className="btn btn-secondary btn-sm" onClick={()=>setEditCatIdx(null)}>Cancelar</button>
+            </div>
+          )}
+          <table>
+            <thead><tr><th>Categoria</th><th style={{textAlign:'center'}}>Ações</th></tr></thead>
+            <tbody>{listas.categorias.map((c,i)=>(
+              <tr key={i} style={editCatIdx===i?{background:'rgba(245,166,35,0.04)'}:{}}>
+                <td>{c}</td>
+                <td>
+                  <div style={{display:'flex',gap:3,justifyContent:'center'}}>
+                    <button className="btn btn-secondary btn-icon btn-sm" title="Editar" onClick={()=>startEditCat(i)}><Icon name="edit" size={13}/></button>
+                    <button className="btn btn-danger btn-icon btn-sm" title="Excluir" onClick={()=>delCategoria(i)}><Icon name="trash" size={13}/></button>
+                  </div>
+                </td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </div>
+      )}
+
+      {tab==='status' && (
+        <div className="table-wrap">
+          <div className="table-header"><h3>Status de Projeto</h3></div>
+          <table>
+            <thead><tr><th>Status</th><th>Badge</th></tr></thead>
+            <tbody>{listas.status.map((s,i)=>(<tr key={i}><td><strong>{s}</strong></td><td><span className={getBadgeClass(s)}>{s}</span></td></tr>))}</tbody>
+          </table>
+        </div>
+      )}
+      {tab==='localidades' && (
+        <div className="table-wrap">
+          <div className="table-header"><h3>Localidades</h3></div>
+          <table>
+            <thead><tr><th>Localidade</th><th>Código</th></tr></thead>
+            <tbody>{listas.localidades.map((l,i)=>(<tr key={i}><td><strong>{l.nome}</strong></td><td><span className="td-mono" style={{color:'var(--accent)'}}>{l.cod}</span></td></tr>))}</tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── CATÁLOGO DE MATERIAIS (era "Catálogo") ── C.2, em ordem alfabética ────────
+function CatalogPage({ listas, updateListas, addToast }) {
+  const [search, setSearch] = useState(''); const [catF, setCatF] = useState('');
+  const [showNew, setShowNew] = useState(false);
+  const [form, setForm] = useState({ Categoria:'', Descricao:'', Especificacao:'', Unidade:'unidade', Preco_Medio:0 });
+  const [editIdx, setEditIdx] = useState(null); // índice no array listas.catalogo
+  const [editForm, setEditForm] = useState(null);
+
+  const cats = [...new Set(listas.catalogo.map(c=>c.Categoria))].sort();
+  // ordenado alfabeticamente por Descrição
+  const filtered = [...listas.catalogo]
+    .filter(c => (!catF || c.Categoria===catF) && (!search || c.Descricao?.toLowerCase().includes(search.toLowerCase())))
+    .sort((a,b) => (a.Descricao||'').localeCompare(b.Descricao||'', 'pt-BR'));
+
+  const saveItem = () => {
+    if (!form.Descricao) { addToast('Informe a descrição.','error'); return; }
+    updateListas(l=>({...l,catalogo:[...l.catalogo,{...form}]}));
+    setForm({ Categoria:'', Descricao:'', Especificacao:'', Unidade:'unidade', Preco_Medio:0 });
+    setShowNew(false); addToast('Item cadastrado no catálogo!','success');
+  };
+  const delItem = (descricao, categoria) => {
+    updateListas(l=>({...l,catalogo:l.catalogo.filter(x=>!(x.Descricao===descricao&&x.Categoria===categoria))}));
+    addToast('Item removido.','info');
+  };
+  const startEdit = (item) => {
+    // encontra índice real no array original (não no filtered/sorted)
+    const idx = listas.catalogo.findIndex(x=>x.Descricao===item.Descricao&&x.Categoria===item.Categoria);
+    setEditIdx(idx); setEditForm({...item}); setShowNew(false);
+  };
+  const saveEdit = () => {
+    updateListas(l=>({...l,catalogo:l.catalogo.map((x,i)=>i===editIdx?{...editForm}:x)}));
+    setEditIdx(null); setEditForm(null); addToast('Item atualizado!','success');
+  };
+
+  return (
+    <div>
+      <div className="topbar">
+        <h1 className="page-title">Catálogo de <span>Materiais</span></h1>
+        <button className="btn btn-primary" onClick={()=>setShowNew(true)}><Icon name="plus" size={15}/>Novo Item</button>
+      </div>
+      {showNew && (
+        <div className="table-wrap" style={{marginBottom:20,padding:20}}>
+          <h3 style={{marginBottom:16}}>Novo Item no Catálogo</h3>
+          <div className="form-grid">
+            <div className="field"><label>Categoria</label><select value={form.Categoria} onChange={e=>setForm(v=>({...v,Categoria:e.target.value}))}><option value="">— Selecione —</option>{listas.categorias.map(c=><option key={c}>{c}</option>)}</select></div>
+            <div className="field"><label>Descrição *</label><input value={form.Descricao} onChange={e=>setForm(v=>({...v,Descricao:e.target.value}))}/></div>
+            <div className="field"><label>Especificação</label><input value={form.Especificacao} onChange={e=>setForm(v=>({...v,Especificacao:e.target.value}))}/></div>
+            <div className="field"><label>Unidade</label><select value={form.Unidade} onChange={e=>setForm(v=>({...v,Unidade:e.target.value}))}>{listas.unidades.map(u=><option key={u}>{u}</option>)}</select></div>
+            <div className="field"><label>Preço Médio (R$)</label><input type="number" step="0.01" value={form.Preco_Medio} onChange={e=>setForm(v=>({...v,Preco_Medio:+e.target.value}))}/></div>
+            <div style={{display:'flex',gap:8,alignItems:'flex-end'}}><button className="btn btn-primary" onClick={saveItem}><Icon name="check" size={14}/>Salvar</button><button className="btn btn-secondary" onClick={()=>setShowNew(false)}>Cancelar</button></div>
+          </div>
+        </div>
+      )}
+      {/* Painel de edição de item do catálogo */}
+      {editIdx!==null && editForm && (
+        <div className="table-wrap" style={{marginBottom:20,padding:20,borderColor:'var(--accent)'}}>
+          <h3 style={{marginBottom:16,color:'var(--accent)'}}>✏️ Editando: {listas.catalogo[editIdx]?.Descricao}</h3>
+          <div className="form-grid">
+            <div className="field"><label>Categoria</label><select value={editForm.Categoria} onChange={e=>setEditForm(v=>({...v,Categoria:e.target.value}))}><option value="">—</option>{listas.categorias.map(c=><option key={c}>{c}</option>)}</select></div>
+            <div className="field"><label>Descrição</label><input value={editForm.Descricao} onChange={e=>setEditForm(v=>({...v,Descricao:e.target.value}))}/></div>
+            <div className="field"><label>Especificação</label><input value={editForm.Especificacao||''} onChange={e=>setEditForm(v=>({...v,Especificacao:e.target.value}))}/></div>
+            <div className="field"><label>Unidade</label><select value={editForm.Unidade} onChange={e=>setEditForm(v=>({...v,Unidade:e.target.value}))}>{listas.unidades.map(u=><option key={u}>{u}</option>)}</select></div>
+            <div className="field"><label>Preço Médio (R$)</label><input type="number" step="0.01" value={editForm.Preco_Medio} onChange={e=>setEditForm(v=>({...v,Preco_Medio:+e.target.value}))}/></div>
+            <div style={{display:'flex',gap:8,alignItems:'flex-end'}}><button className="btn btn-primary" onClick={saveEdit}><Icon name="check" size={14}/>Atualizar</button><button className="btn btn-secondary" onClick={()=>{setEditIdx(null);setEditForm(null);}}>Cancelar</button></div>
+          </div>
+        </div>
+      )}
+      <div className="filter-row">
+        <div className="search-bar" style={{flex:1,maxWidth:280}}><Icon name="search" size={15}/><input placeholder="Buscar item..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
+        <select value={catF} onChange={e=>setCatF(e.target.value)}><option value="">Todas as Categorias</option>{cats.map(c=><option key={c}>{c}</option>)}</select>
+        <span style={{color:'var(--text3)',fontSize:12}}>{filtered.length} itens (ordem alfabética)</span>
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead><tr><th>Descrição ▲</th><th>Categoria</th><th>Especificação</th><th>Unidade</th><th>Preço Médio</th><th></th></tr></thead>
+          <tbody>
+            {filtered.map((c,i)=>(
+              <tr key={i}>
+                <td><strong>{c.Descricao}</strong></td>
+                <td><span style={{fontSize:11,background:'var(--bg2)',padding:'2px 8px',borderRadius:4,color:'var(--text2)'}}>{c.Categoria}</span></td>
+                <td style={{color:'var(--text3)',fontSize:12}}>{c.Especificacao}</td>
+                <td>{c.Unidade}</td>
+                <td><strong style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontSize:15}}>{fmt(c.Preco_Medio)}</strong></td>
+                <td>
+                  <div style={{display:'flex',gap:3}}>
+                    <button className="btn btn-secondary btn-icon btn-sm" title="Editar" onClick={()=>startEdit(c)}><Icon name="edit" size={13}/></button>
+                    <button className="btn btn-danger btn-icon btn-sm" title="Excluir" onClick={()=>delItem(c.Descricao,c.Categoria)}><Icon name="trash" size={13}/></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ── USERS PAGE — B.1 com cadastro e recuperação de senha ─────────────────────
+function UsersPage({ user, users, updateUsers, addToast }) {
+  const [showAdd, setShowAdd] = useState(false);
+  const [editUser, setEditUser] = useState(null);
+  const [form, setForm] = useState({ username:'', name:'', email:'', password:'', role:'user' });
+  const [errMsg, setErrMsg] = useState('');
+
+  const isAdmin = user.role === 'admin';
+
+  const saveUser = () => {
+    if (!form.username || !form.name || !form.password) { setErrMsg('Preencha usuário, nome e senha.'); return; }
+    if (users.length >= 10 && !editUser) { setErrMsg('Limite de 10 usuários atingido.'); return; }
+    if (!editUser && users.find(x=>x.username===form.username)) { setErrMsg('Nome de usuário já existe.'); return; }
+    if (editUser) {
+      updateUsers(users.map(u=>u.id===editUser.id?{...u,...form}:u));
+      addToast('Usuário atualizado!','success');
+    } else {
+      updateUsers([...users, {...form, id: Date.now()}]);
+      addToast('Usuário cadastrado!','success');
+    }
+    setForm({ username:'', name:'', email:'', password:'', role:'user' });
+    setShowAdd(false); setEditUser(null); setErrMsg('');
+  };
+
+  const delUser = (id) => {
+    if (id===user.id) { addToast('Não é possível excluir o usuário atual.','error'); return; }
+    if (!confirm('Excluir usuário?')) return;
+    updateUsers(users.filter(u=>u.id!==id));
+    addToast('Usuário removido.','info');
+  };
+
+  const startEdit = (u) => { setEditUser(u); setForm({username:u.username,name:u.name,email:u.email||'',password:u.password,role:u.role}); setShowAdd(true); setErrMsg(''); };
+
+  return (
+    <div>
+      <div className="topbar">
+        <h1 className="page-title">Gestão de <span>Usuários</span></h1>
+        {isAdmin && <button className="btn btn-primary" onClick={()=>{setShowAdd(true);setEditUser(null);setForm({username:'',name:'',email:'',password:'',role:'user'});}}><Icon name="plus" size={15}/>Novo Usuário</button>}
+      </div>
+
+      {showAdd && isAdmin && (
+        <div className="table-wrap" style={{marginBottom:20,padding:20}}>
+          <h3 style={{marginBottom:16}}>{editUser ? 'Editar Usuário' : 'Novo Usuário'}</h3>
+          {errMsg && <div className="err">{errMsg}</div>}
+          <div className="form-grid">
+            <div className="field"><label>Nome Completo *</label><input value={form.name} onChange={e=>setForm(v=>({...v,name:e.target.value}))}/></div>
+            <div className="field"><label>Nome de Usuário *</label><input value={form.username} onChange={e=>setForm(v=>({...v,username:e.target.value}))} disabled={!!editUser}/></div>
+            <div className="field"><label>E-mail</label><input type="email" value={form.email} onChange={e=>setForm(v=>({...v,email:e.target.value}))}/></div>
+            <div className="field"><label>Senha *</label><input type="password" value={form.password} onChange={e=>setForm(v=>({...v,password:e.target.value}))}/></div>
+            <div className="field"><label>Perfil</label>
+              <select value={form.role} onChange={e=>setForm(v=>({...v,role:e.target.value}))}>
+                <option value="user">Usuário</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+            <div style={{display:'flex',gap:8,alignItems:'flex-end'}}>
+              <button className="btn btn-primary" onClick={saveUser}><Icon name="check" size={14}/>Salvar</button>
+              <button className="btn btn-secondary" onClick={()=>{setShowAdd(false);setEditUser(null);setErrMsg('');}}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="table-wrap">
+        <div className="table-header"><h3>Usuários Cadastrados ({users.length}/10)</h3></div>
+        <table>
+          <thead><tr><th>Nome</th><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Senha</th><th>Ações</th></tr></thead>
+          <tbody>
+            {users.map(u=>(
+              <tr key={u.id}>
+                <td><strong>{u.name}</strong></td>
+                <td><span className="td-mono" style={{color:'var(--accent)'}}>{u.username}</span></td>
+                <td style={{color:'var(--text2)',fontSize:12}}>{u.email||'—'}</td>
+                <td><span className="badge" style={{background:u.role==='admin'?'rgba(245,166,35,0.2)':'rgba(74,144,217,0.2)',color:u.role==='admin'?'var(--accent)':'var(--blue)'}}>{u.role}</span></td>
+                <td><code style={{background:'var(--bg2)',padding:'2px 8px',borderRadius:4,fontSize:12,color:'var(--text3)'}}>{u.password}</code></td>
+                <td>
+                  {isAdmin && (
+                    <div style={{display:'flex',gap:4}}>
+                      <button className="btn btn-sm btn-secondary btn-icon" title="Editar" onClick={()=>startEdit(u)}><Icon name="edit" size={13}/></button>
+                      <button className="btn btn-sm btn-danger btn-icon" title="Excluir" onClick={()=>delUser(u.id)}><Icon name="trash" size={13}/></button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div style={{padding:16,borderTop:'1px solid var(--border)',color:'var(--text3)',fontSize:12}}>
+          ℹ️ Recuperação de senha: na tela de login, clique em "Esqueci a senha" e informe o usuário ou e-mail. A senha será exibida (em produção seria enviada por SMTP). Apenas administradores podem cadastrar/editar usuários.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── RELATÓRIOS — A.2 ─────────────────────────────────────────────────────────
+function ReportsPage({ projects, materials, maoDeObra, listas, addToast }) {
+  const [reportTab, setReportTab] = useState('projetos');
+  const [statusF, setStatusF] = useState('');
+  const [clienteF, setClienteF] = useState('');
+  const [locF, setLocF] = useState('');
+  const [preview, setPreview] = useState(false);
+  const [catSearchR, setCatSearchR] = useState('');
+  const [catFilterR, setCatFilterR] = useState('');
+
+  const clientes = [...new Set(projects.map(p=>p.Cliente).filter(Boolean))].sort();
+  const localidades = [...new Set(projects.map(p=>p.Localidade).filter(Boolean))].sort();
+
+  const filtered = projects.filter(p => {
+    if (statusF && p.Status !== statusF) return false;
+    if (clienteF && p.Cliente !== clienteF) return false;
+    if (locF && p.Localidade !== locF) return false;
+    return true;
+  });
+
+  const getMatTotal = (code) => materials.filter(m=>m.Codigo_Projeto===code).reduce((s,m)=>s+(m.Total||0),0);
+  const getMOTotal = (code) => maoDeObra.filter(m=>m.Codigo_Projeto===code).reduce((s,m)=>s+(m.Total||0),0);
+
+  const totalGeral = filtered.reduce((s,p)=>s+getMatTotal(p.Codigo)+getMOTotal(p.Codigo),0);
+  const totalMat = filtered.reduce((s,p)=>s+getMatTotal(p.Codigo),0);
+  const totalMO = filtered.reduce((s,p)=>s+getMOTotal(p.Codigo),0);
+
+  // Exportar CSV (mantido para compatibilidade)
+  const exportExcel = () => {
+    const BOM = '\uFEFF';
+    const header = ['Código','Nome do Projeto','Cliente','Responsável','Status','Localidade','Categoria','Data Início','Prazo','Mat./Serv. (R$)','Mão de Obra (R$)','Custo Total (R$)'];
+    const rows = filtered.map(p => [
+      p.Codigo, p.Nome_Projeto, p.Cliente, p.Responsavel, p.Status, p.Localidade, p.Categoria_Projeto,
+      p.Data_Inicio, p.Data_Prev_Termino||'',
+      getMatTotal(p.Codigo).toFixed(2).replace('.',','),
+      getMOTotal(p.Codigo).toFixed(2).replace('.',','),
+      (getMatTotal(p.Codigo)+getMOTotal(p.Codigo)).toFixed(2).replace('.',',')
+    ]);
+    const csv = BOM + [header, ...rows].map(r => r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `JNM_Relatorio_${today()}.csv`;
+    a.click();
+    addToast('CSV exportado!','success');
+  };
+
+  // Exportar XLS real via SheetJS — relatório completo com 3 abas
+  const exportXLS = () => {
+    if (!window.XLSX) { addToast('Biblioteca XLSX não carregada. Verifique conexão.','error'); return; }
+    const XLSX = window.XLSX;
+    const wb = XLSX.utils.book_new();
+
+    // Aba 1 — Resumo de Projetos
+    const projRows = [
+      ['Código','Nome do Projeto','Cliente','Responsável','Status','Localidade','Categoria','Início','Prazo','Data Conclusão','Mat./Serv. (R$)','Mão de Obra (R$)','Custo Total (R$)','Objetivo','Observações']
+    ];
+    filtered.forEach(p => {
+      const mat = getMatTotal(p.Codigo); const mo = getMOTotal(p.Codigo);
+      projRows.push([p.Codigo,p.Nome_Projeto,p.Cliente,p.Responsavel||'',p.Status,p.Localidade||'',p.Categoria_Projeto||'',p.Data_Inicio||'',p.Data_Prev_Termino||'',p.Data_Real_Termino||'',mat,mo,mat+mo,p.Objetivo||'',p.Observacoes||'']);
+    });
+    // linha de total
+    projRows.push(['','','','','','','','','','TOTAIS',totalMat,totalMO,totalGeral,'','']);
+    const ws1 = XLSX.utils.aoa_to_sheet(projRows);
+    // larguras de coluna
+    ws1['!cols'] = [10,40,24,18,14,18,22,12,12,14,14,14,14,30,30].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws1, 'Projetos');
+
+    // Aba 2 — Materiais e Serviços (apenas projetos filtrados)
+    const codigos = new Set(filtered.map(p=>p.Codigo));
+    const matRows = [['Código Projeto','Nome Projeto','Data','Categoria','Descrição','Especificação','Unidade','Quantidade','Valor Unit. (R$)','Total (R$)']];
+    materials.filter(m=>codigos.has(m.Codigo_Projeto)).forEach(m=>{
+      const proj = projects.find(p=>p.Codigo===m.Codigo_Projeto);
+      matRows.push([m.Codigo_Projeto,proj?.Nome_Projeto||'',m.Data||'',m.Categoria||'',m.Descricao||'',m.Especificacao||'',m.Unidade||'',m.Quantidade,m.Valor_Unit,m.Total]);
+    });
+    const ws2 = XLSX.utils.aoa_to_sheet(matRows);
+    ws2['!cols'] = [16,36,12,20,30,20,10,10,14,14].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws2, 'Materiais e Serviços');
+
+    // Aba 3 — Mão de Obra
+    const moRows = [['Código Projeto','Nome Projeto','Data','Função','Valor/Hora (R$)','Horas','Total (R$)']];
+    maoDeObra.filter(m=>codigos.has(m.Codigo_Projeto)).forEach(m=>{
+      const proj = projects.find(p=>p.Codigo===m.Codigo_Projeto);
+      moRows.push([m.Codigo_Projeto,proj?.Nome_Projeto||'',m.Data||'',m.Funcao||'',m.Valor_Hora,m.Horas,m.Total]);
+    });
+    const ws3 = XLSX.utils.aoa_to_sheet(moRows);
+    ws3['!cols'] = [16,36,12,14,14,10,14].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws3, 'Mão de Obra');
+
+    XLSX.writeFile(wb, `JNM_Relatorio_Completo_${today()}.xlsx`);
+    addToast('Relatório XLS exportado com sucesso!','success');
+  };
+
+  // Exportar PDF via janela de impressão
+  const exportPDF = () => {
+    const win = window.open('','_blank');
+    const rows = filtered.map(p => {
+      const mat = getMatTotal(p.Codigo); const mo = getMOTotal(p.Codigo);
+      return `<tr>
+        <td style="font-weight:600;color:#b06000">${p.Codigo}</td>
+        <td>${p.Nome_Projeto}</td>
+        <td>${p.Cliente}</td>
+        <td>${p.Responsavel||''}</td>
+        <td><span style="background:${p.Status==='Em andamento'?'#dbeafe':p.Status==='Concluido'?'#dcfce7':'#fef9c3'};color:${p.Status==='Em andamento'?'#1d4ed8':p.Status==='Concluido'?'#166534':'#854d0e'};padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700">${p.Status}</span></td>
+        <td>${p.Localidade||''}</td>
+        <td style="text-align:right">${fmt(mat)}</td>
+        <td style="text-align:right">${fmt(mo)}</td>
+        <td style="text-align:right;font-weight:700;color:#b06000">${fmt(mat+mo)}</td>
+      </tr>`;
+    }).join('');
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    <title>JNM — Relatório de Projetos</title>
+    <style>
+      body{font-family:Arial,sans-serif;font-size:11px;color:#111;margin:24px}
+      h1{font-size:20px;color:#b06000;margin-bottom:4px}
+      .sub{color:#666;font-size:12px;margin-bottom:16px}
+      table{width:100%;border-collapse:collapse;margin-top:12px}
+      th{background:#1e2235;color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+      td{padding:7px 10px;border-bottom:1px solid #e5e7eb}
+      tr:nth-child(even){background:#f9fafb}
+      .totals{margin-top:16px;display:flex;gap:24px}
+      .tot-box{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:10px 16px;min-width:180px}
+      .tot-label{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.05em}
+      .tot-val{font-size:18px;font-weight:700;color:#b06000}
+      @media print{body{margin:8px} .no-print{display:none}}
+    </style></head><body>
+    <h1>JNM Engenharia — Relatório de Projetos</h1>
+    <div class="sub">Gerado em: ${new Date().toLocaleString('pt-BR')} | Filtros: Status=${statusF||'Todos'} | Cliente=${clienteF||'Todos'} | Localidade=${locF||'Todas'}</div>
+    <button class="no-print" onclick="window.print()" style="background:#b06000;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;margin-bottom:8px">🖨️ Imprimir / Salvar PDF</button>
+    <table>
+      <thead><tr><th>Código</th><th>Projeto</th><th>Cliente</th><th>Responsável</th><th>Status</th><th>Localidade</th><th>Mat./Serv.</th><th>Mão de Obra</th><th>Total</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr style="background:#1e2235;color:#fff">
+        <td colspan="6" style="padding:8px 10px;font-weight:700;text-align:right;color:#f5a623">TOTAIS (${filtered.length} projetos)</td>
+        <td style="padding:8px 10px;font-weight:700;text-align:right;color:#86efac">${fmt(totalMat)}</td>
+        <td style="padding:8px 10px;font-weight:700;text-align:right;color:#86efac">${fmt(totalMO)}</td>
+        <td style="padding:8px 10px;font-weight:700;text-align:right;color:#f5a623">${fmt(totalGeral)}</td>
+      </tr></tfoot>
+    </table>
+    <div class="totals">
+      <div class="tot-box"><div class="tot-label">Projetos</div><div class="tot-val">${filtered.length}</div></div>
+      <div class="tot-box"><div class="tot-label">Mat./Serviços</div><div class="tot-val">${fmt(totalMat)}</div></div>
+      <div class="tot-box"><div class="tot-label">Mão de Obra</div><div class="tot-val">${fmt(totalMO)}</div></div>
+      <div class="tot-box"><div class="tot-label">Custo Total Geral</div><div class="tot-val" style="font-size:22px">${fmt(totalGeral)}</div></div>
+    </div>
+    </body></html>`);
+    win.document.close();
+    addToast('Janela de PDF aberta — clique em Imprimir.','info');
+  };
+
+  // Exportar Catálogo XLS
+  const exportCatalogXLS = () => {
+    if (!window.XLSX) { addToast('Biblioteca XLSX não carregada.','error'); return; }
+    const XLSX = window.XLSX;
+    const wb = XLSX.utils.book_new();
+    const catRows = [['Categoria','Descrição','Especificação','Unidade','Preço Médio (R$)']];
+    const catData = listas && listas.catalogo ? [...listas.catalogo].sort((a,b)=>(a.Descricao||'').localeCompare(b.Descricao||'','pt-BR')) : [];
+    catData.forEach(c => catRows.push([c.Categoria||'',c.Descricao||'',c.Especificacao||'',c.Unidade||'',c.Preco_Medio||0]));
+    const ws = XLSX.utils.aoa_to_sheet(catRows);
+    ws['!cols'] = [20,36,24,12,16].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws, 'Catálogo de Materiais');
+    XLSX.writeFile(wb, `JNM_Catalogo_${today()}.xlsx`);
+    addToast('Catálogo exportado com sucesso!','success');
+  };
+
+  // Catálogo filtrado para exibição no relatório
+  const catalogFiltered = (listas && listas.catalogo ? [...listas.catalogo] : [])
+    .filter(c => (!catFilterR || c.Categoria === catFilterR) && (!catSearchR || (c.Descricao||'').toLowerCase().includes(catSearchR.toLowerCase())))
+    .sort((a,b)=>(a.Descricao||'').localeCompare(b.Descricao||'','pt-BR'));
+  const catalogCats = listas && listas.catalogo ? [...new Set(listas.catalogo.map(c=>c.Categoria))].sort() : [];
+
+  return (
+    <div>
+      <div className="topbar">
+        <h1 className="page-title">Relatórios <span>{reportTab==='catalogo'?'Catálogo':'de Projetos'}</span></h1>
+        {reportTab==='projetos' && (
+          <div style={{display:'flex',gap:8}}>
+            <button className="btn btn-success" onClick={exportXLS}><Icon name="download" size={15}/>Exportar XLS (Completo)</button>
+            <button className="btn btn-secondary" onClick={exportExcel}><Icon name="download" size={15}/>CSV</button>
+            <button className="btn btn-secondary" onClick={exportPDF}><Icon name="report" size={15}/>PDF</button>
+          </div>
+        )}
+        {reportTab==='catalogo' && (
+          <button className="btn btn-success" onClick={exportCatalogXLS}><Icon name="download" size={15}/>Exportar Catálogo XLS</button>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="tabs" style={{marginBottom:20}}>
+        <div className={`tab ${reportTab==='projetos'?'active':''}`} onClick={()=>setReportTab('projetos')}>Relatório de Projetos</div>
+        <div className={`tab ${reportTab==='catalogo'?'active':''}`} onClick={()=>setReportTab('catalogo')}>Catálogo de Materiais</div>
+      </div>
+
+      {reportTab==='projetos' && (<>
+      <div className="filter-row" style={{marginBottom:20}}>
+        <Icon name="filter" size={14} style={{color:'var(--text3)'}}/>
+        <select value={statusF} onChange={e=>setStatusF(e.target.value)}><option value="">Todos os Status</option>{['Planejamento','Em andamento','Concluido','Cancelado','Stand by'].map(s=><option key={s}>{s}</option>)}</select>
+        <select value={clienteF} onChange={e=>setClienteF(e.target.value)}><option value="">Todos os Clientes</option>{clientes.map(c=><option key={c}>{c}</option>)}</select>
+        <select value={locF} onChange={e=>setLocF(e.target.value)}><option value="">Todas as Localidades</option>{localidades.map(l=><option key={l}>{l}</option>)}</select>
+        {(statusF||clienteF||locF) && <button className="btn btn-sm btn-secondary" onClick={()=>{setStatusF('');setClienteF('');setLocF('');}}>Limpar</button>}
+      </div>
+
+      <div className="stats-grid" style={{gridTemplateColumns:'repeat(4,1fr)',marginBottom:20}}>
+        <div className="stat-card orange"><div className="stat-label">Projetos Filtrados</div><div className="stat-value">{filtered.length}</div></div>
+        <div className="stat-card blue"><div className="stat-label">Mat./Serviços</div><div className="stat-value" style={{fontSize:18}}>{fmt(totalMat)}</div></div>
+        <div className="stat-card purple"><div className="stat-label">Mão de Obra</div><div className="stat-value" style={{fontSize:18}}>{fmt(totalMO)}</div></div>
+        <div className="stat-card green"><div className="stat-label">Custo Total</div><div className="stat-value" style={{fontSize:18}}>{fmt(totalGeral)}</div></div>
+      </div>
+
+      <div className="table-wrap report-table">
+        <div className="table-header"><h3>Dados dos Projetos</h3><span style={{color:'var(--text3)',fontSize:12}}>{filtered.length} projetos</span></div>
+        <div style={{overflowX:'auto'}}>
+          <table>
+            <thead><tr><th>Código</th><th>Projeto</th><th>Cliente</th><th>Responsável</th><th>Status</th><th>Localidade</th><th>Categoria</th><th>Início</th><th>Prazo</th><th>Mat./Serv.</th><th>Mão Obra</th><th>Total</th></tr></thead>
+            <tbody>
+              {filtered.length===0 && <tr><td colSpan={12}><div className="empty"><p>Nenhum projeto com esses filtros.</p></div></td></tr>}
+              {filtered.map(p => {
+                const mat = getMatTotal(p.Codigo); const mo = getMOTotal(p.Codigo);
+                return (
+                  <tr key={p.Codigo}>
+                    <td><span style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13}}>{p.Codigo}</span></td>
+                    <td style={{maxWidth:200}}><div style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontSize:12}}>{p.Nome_Projeto}</div></td>
+                    <td style={{fontSize:12}}>{p.Cliente}</td>
+                    <td style={{fontSize:12}}>{p.Responsavel}</td>
+                    <td><span className={getBadgeClass(p.Status)}>{p.Status}</span></td>
+                    <td style={{fontSize:12}}>{p.Localidade}</td>
+                    <td style={{fontSize:12}}>{p.Categoria_Projeto}</td>
+                    <td style={{fontSize:12,color:'var(--text3)'}}>{fmtDate(p.Data_Inicio)}</td>
+                    <td style={{fontSize:12,color: p.Data_Prev_Termino&&p.Status==='Em andamento'&&diffDays(today(),p.Data_Prev_Termino)<0?'var(--red)':'var(--text3)'}}>{fmtDate(p.Data_Prev_Termino)||'—'}</td>
+                    <td style={{textAlign:'right',fontSize:12}}>{fmt(mat)}</td>
+                    <td style={{textAlign:'right',fontSize:12}}>{fmt(mo)}</td>
+                    <td style={{textAlign:'right'}}><strong style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontSize:14}}>{fmt(mat+mo)}</strong></td>
+                  </tr>
+                );
+              })}
+              {filtered.length>0 && <tr style={{background:'var(--bg2)'}}>
+                <td colSpan={9} style={{textAlign:'right',fontWeight:700,color:'var(--text2)',fontSize:12}}>TOTAIS ({filtered.length} projetos)</td>
+                <td style={{textAlign:'right'}}><strong style={{color:'var(--blue)',fontFamily:"'Barlow Condensed',sans-serif"}}>{fmt(totalMat)}</strong></td>
+                <td style={{textAlign:'right'}}><strong style={{color:'var(--purple)',fontFamily:"'Barlow Condensed',sans-serif"}}>{fmt(totalMO)}</strong></td>
+                <td style={{textAlign:'right'}}><strong style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontSize:16}}>{fmt(totalGeral)}</strong></td>
+              </tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </>)}
+
+      {reportTab==='catalogo' && (<>
+        <div className="filter-row" style={{marginBottom:16}}>
+          <div className="search-bar" style={{flex:1,maxWidth:280}}><Icon name="search" size={15}/><input placeholder="Buscar item..." value={catSearchR} onChange={e=>setCatSearchR(e.target.value)}/></div>
+          <select style={{background:'var(--panel)',border:'1px solid var(--border)',color:'var(--text)',padding:'8px 12px',borderRadius:'var(--radius)',fontSize:13,outline:'none'}} value={catFilterR} onChange={e=>setCatFilterR(e.target.value)}>
+            <option value="">Todas as Categorias</option>{catalogCats.map(c=><option key={c}>{c}</option>)}
+          </select>
+          <span style={{color:'var(--text3)',fontSize:12}}>{catalogFiltered.length} itens</span>
+        </div>
+        <div className="table-wrap report-table">
+          <div className="table-header"><h3>Catálogo de Materiais e Serviços</h3><span style={{color:'var(--text3)',fontSize:12}}>{catalogFiltered.length} itens</span></div>
+          <div style={{overflowX:'auto'}}>
+            <table>
+              <thead><tr><th>Descrição ▲</th><th>Categoria</th><th>Especificação</th><th>Unidade</th><th>Preço Médio</th></tr></thead>
+              <tbody>
+                {catalogFiltered.length===0 && <tr><td colSpan={5}><div className="empty"><p>Nenhum item encontrado.</p></div></td></tr>}
+                {catalogFiltered.map((c,i) => (
+                  <tr key={i}>
+                    <td><strong>{c.Descricao}</strong></td>
+                    <td><span style={{fontSize:11,background:'var(--bg2)',padding:'2px 8px',borderRadius:4,color:'var(--text2)'}}>{c.Categoria}</span></td>
+                    <td style={{color:'var(--text3)',fontSize:12}}>{c.Especificacao}</td>
+                    <td style={{fontSize:12}}>{c.Unidade}</td>
+                    <td><strong style={{color:'var(--accent)',fontFamily:"'Barlow Condensed',sans-serif",fontSize:15}}>{fmt(c.Preco_Medio)}</strong></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </>)}
+    </div>
+  );
+}
+
+// ── BACKUP PAGE — A.1 (indicador de salvamento) + D (importação ao abrir) ────
+function BackupPage({ projects, materials, maoDeObra, listas, loadBackup, addToast }) {
+  const fileRef = useRef();
+  const lastSave = getLastSaveTime();
+
+  const doExport = () => {
+    const data = { version:'2.4', exportedAt: new Date().toISOString(), projects, materials, maoDeObra, listas };
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `JNM_backup_${today()}.json`;
+    a.click();
+    addToast('Backup exportado!','success');
+  };
+
+  const doExportCSV = () => {
+    const BOM = '\uFEFF';
+    const header = ['Codigo','Nome_Projeto','Cliente','Responsavel','Status','Data_Inicio','Data_Prev_Termino','Localidade','Categoria_Projeto'];
+    const rows = projects.map(p => header.map(h=>`"${(p[h]||'').toString().replace(/"/g,'""')}"`).join(';'));
+    const blob = new Blob([BOM + [header.join(';'),...rows].join('\n')], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `JNM_projetos_${today()}.csv`; a.click();
+    addToast('CSV exportado!','success');
+  };
+
+  const doImport = (e) => {
+    const file = e.target.files[0]; if(!file)return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.projects || !data.materials) { addToast('Arquivo inválido.','error'); return; }
+        loadBackup(data);
+        addToast(`Importado: ${data.projects.length} projetos, ${data.materials.length} materiais.`,'success');
+      } catch(err) { addToast('Erro ao importar: JSON inválido.','error'); }
+    };
+    reader.readAsText(file); e.target.value='';
+  };
+
+  return (
+    <div>
+      <div className="topbar"><h1 className="page-title">Backup & <span>Importação</span></h1></div>
+
+      {/* A.1 — Indicador de último salvamento */}
+      <div className="chart-card" style={{marginBottom:16,borderColor:'var(--green)',borderWidth:1}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <div style={{width:10,height:10,borderRadius:'50%',background:'var(--green)',flexShrink:0}}/>
+          <div>
+            <div style={{fontWeight:700,fontSize:14,color:'var(--green)'}}>Dados sincronizados com Google Drive</div>
+            <div style={{fontSize:12,color:'var(--text3)',marginTop:2}}>Último salvamento: <strong style={{color:'var(--text2)'}}>{fmtDateTime(lastSave)}</strong></div>
+            <div style={{fontSize:11,color:'var(--text3)',marginTop:4}}>Auto-save ativo a cada 60 segundos. Use o botão "Salvar" no canto superior direito para salvar imediatamente. Exporte um backup JSON como cópia de segurança adicional.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+        <div className="chart-card">
+          <h3>📥 Exportar Dados</h3>
+          <p style={{color:'var(--text2)',fontSize:13,marginBottom:16,marginTop:8}}>Gera arquivo de backup completo (JSON) ou relatório de projetos (CSV/Excel).</p>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            <button className="btn btn-primary" onClick={doExport}><Icon name="download" size={15}/>Exportar JSON (Backup Completo)</button>
+            <button className="btn btn-secondary" onClick={doExportCSV}><Icon name="download" size={15}/>Exportar Projetos CSV</button>
+          </div>
+        </div>
+        <div className="chart-card">
+          <h3>📤 Importar Dados</h3>
+          <p style={{color:'var(--text2)',fontSize:13,marginBottom:16,marginTop:8}}>Importe um backup JSON. <strong style={{color:'var(--yellow)'}}>Atenção: os dados atuais serão substituídos.</strong></p>
+          <input type="file" ref={fileRef} accept=".json" style={{display:'none'}} onChange={doImport}/>
+          <button className="btn btn-secondary" onClick={()=>fileRef.current.click()}><Icon name="upload" size={15}/>Selecionar arquivo JSON</button>
+        </div>
+      </div>
+
+      {/* D.2 — Instruções Google Drive */}
+      <div className="chart-card" style={{marginTop:16}}>
+        <h3>☁️ Sincronização Google Drive</h3>
+        <p style={{color:'var(--text2)',fontSize:13,marginTop:8,lineHeight:1.6}}>
+          Os dados são salvos diretamente no seu <strong style={{color:'var(--accent)'}}>Google Drive</strong> em um arquivo chamado <code style={{background:'var(--bg2)',padding:'2px 6px',borderRadius:4}}>JNM_Gestao_Projetos_dados.json</code>.
+          Todos os usuários autorizados compartilham o mesmo arquivo. O <strong>auto-save</strong> ocorre a cada 60 segundos automaticamente.
+        </p>
+        <div style={{marginTop:12,padding:12,background:'rgba(74,144,217,0.1)',border:'1px solid rgba(74,144,217,0.2)',borderRadius:'var(--radius)',fontSize:12,color:'var(--blue)'}}>
+          💡 <strong>Multiusuário:</strong> O sistema detecta automaticamente se outro usuário salvou uma versão mais recente ao abrir o app. Use o botão <strong>"Salvar"</strong> no canto superior direito para salvar imediatamente no Drive.
+        </div>
+      </div>
+
+      <div className="chart-card" style={{marginTop:16}}>
+        <h3>📊 Resumo dos Dados Atuais</h3>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginTop:12}}>
+          {[['Projetos',projects.length,'orange'],['Mat./Serviços',materials.length,'blue'],['Lançamentos MO',maoDeObra.length,'green'],['Itens Catálogo',listas.catalogo.length,'purple']].map(([label,val,color])=>(
+            <div key={label} className={`stat-card ${color}`}><div className="stat-label">{label}</div><div className="stat-value">{val}</div></div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── EDIT PROJECT MODAL ───────────────────────────────────────────────────────
+function EditProjectModal({ project, listas, onSave, onClose, user }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-lg" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Editar Projeto</h2>
+          <button className="btn btn-secondary btn-icon" onClick={onClose}><Icon name="x" size={16}/></button>
+        </div>
+        <div className="modal-body">
+          <ProjectForm initial={project} listas={listas} onSave={onSave} onCancel={onClose} user={user}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── APP ───────────────────────────────────────────────────────────────────────
+function App() {
+  // Fase de inicialização: 'startup' | 'login' | 'app'
+  const [phase, setPhase] = useState('startup');
+  const [user, setUser] = useState(null);
+  const [page, setPage] = useState('dashboard');
+  const [detailCode, setDetailCode] = useState(null);
+  const [editProject, setEditProject] = useState(null);
+  const [toasts, setToasts] = useState([]);
+  const [users, setUsers] = useState(() => loadUsers());
+
+  // Estado Google Drive
+  const [gdStatus, setGdStatus] = useState('offline'); // offline | saved | saving | error
+  const [gdLastSave, setGdLastSave] = useState(getLastSaveTime());
+  const gdCurrentUser = useRef(null); // nome do usuário logado para tag de save
+
+  const [projects, setProjects]     = useState(SEED.projects);
+  const [materials, setMaterials]   = useState(SEED.materials);
+  const [maoDeObra, setMaoDeObra]   = useState(SEED.maoDeObra);
+  const [listas, setListas]         = useState({
+    categorias: SEED.categorias, funcoes: SEED.funcoes, status: SEED.status,
+    unidades: SEED.unidades, localidades: SEED.localidades,
+    categoriasProjeto: SEED.categoriasProjeto, catalogo: SEED.catalogo
+  });
+
+  // Referência para auto-save sem ficar criando closures velhos
+  const dataRef = useRef({ projects, materials, maoDeObra, listas });
+  useEffect(() => { dataRef.current = { projects, materials, maoDeObra, listas }; }, [projects, materials, maoDeObra, listas]);
+
+  const addToast = (msg, type='info') => {
+    const id = uid();
+    setToasts(t=>[...t,{id,msg,type}]);
+    setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3500);
+  };
+
+  // ── Salva no Drive + localStorage ────────────────────────────────────────
+  const performSave = async (dataOverride) => {
+    const d = dataOverride || dataRef.current;
+    // Sempre salva local como cache/offline fallback
+    saveStore(d);
+    setGdLastSave(new Date().toISOString());
+    // Tenta salvar no Drive
+    if (!_gdAccessToken) return;
+    setGdStatus('saving');
+    try {
+      await gdSaveData({ ...d, _user: gdCurrentUser.current || 'usuário' });
+      setGdStatus('saved');
+    } catch(e) {
+      setGdStatus('error');
+      addToast('Falha ao salvar no Drive: ' + e.message, 'error');
+    }
+  };
+
+  // ── Auto-save a cada 60s ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (phase !== 'app') return;
+    const iv = setInterval(() => performSave(), 60000);
+    return () => clearInterval(iv);
+  }, [phase]);
+
+  // Salva localStorage a cada alteração de dados (fallback offline)
+  useEffect(() => {
+    if (phase !== 'app') return;
+    saveStore({ projects, materials, maoDeObra, listas });
+  }, [projects, materials, maoDeObra, listas, phase]);
+
+  // Salva usuários separadamente
+  useEffect(() => { saveUsers(users); }, [users]);
+
+  // ── Callback do GDriveStartup ─────────────────────────────────────────────
+  const handleDataLoaded = async (data, source) => {
+    if (source === 'seed' || !data) {
+      // Inicia com seed — não altera o estado atual (SEED já é o default)
+    } else {
+      // Aplica dados vindos do Drive ou backup
+      setProjects(data.projects || []);
+      setMaterials(data.materials || []);
+      setMaoDeObra(data.maoDeObra || []);
+      if (data.listas) setListas(data.listas);
+      saveStore(data);
+      if (data.savedAt) setGdLastSave(data.savedAt);
+    }
+    if (source === 'local') {
+      // Usuário escolheu versão local — força um save imediato no Drive depois de setar
+      setTimeout(() => performSave(), 500);
+    }
+    setGdStatus(source === 'seed' ? 'offline' : 'saved');
+    setPhase('login');
+  };
+
+  const applyData = (data) => {
+    setProjects(data.projects||[]);
+    setMaterials(data.materials||[]);
+    setMaoDeObra(data.maoDeObra||[]);
+    if (data.listas) setListas(data.listas);
+  };
+
+  const handleLogin = (u) => {
+    gdCurrentUser.current = u.name;
+    setUser(u);
+    setPhase('app');
+    // Ao fazer login, verifica se há versão mais recente no Drive
+    if (_gdAccessToken) {
+      gdGetFileMeta().then(meta => {
+        if (meta && meta.modifiedTime) {
+          const localTime = getLastSaveTime();
+          if (localTime && new Date(meta.modifiedTime) > new Date(localTime)) {
+            addToast('⚠️ Há uma versão mais recente no Drive. Acesse Backup > Recarregar Drive para atualizar.', 'info');
+          }
+        }
+      });
+    }
+  };
+
+  const saveToFile = () => {
+    const data = { version:'2.5', exportedAt: new Date().toISOString(), projects, materials, maoDeObra, listas };
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'JNM_backup_' + today() + '.json';
+    a.click();
+    addToast('Backup local salvo!','success');
+  };
+
+  const loadBackup = (data) => { applyData(data); };
+
+  // ── Geração de código de projeto (inalterada) ─────────────────────────────
+  const genCodCat = (nomeCategoria, listasCat) => {
+    const catEntry = listasCat.find(c => c.nome === nomeCategoria);
+    if (catEntry && catEntry.cod) return catEntry.cod;
+    if (nomeCategoria) return nomeCategoria.replace(/[^A-Za-z]/g,'').toUpperCase().slice(0,4).padEnd(4,'X');
+    return 'PROJ';
+  };
+
+  const addProject = (form) => {
+    setProjects(prev => {
+      const loc = listas.localidades.find(l => l.nome === form.Localidade);
+      const codLoc = (loc ? loc.cod : 'JNM.01').replace('JNM ','JNM.');
+      const codCat = genCodCat(form.Categoria_Projeto, listas.categoriasProjeto);
+      const nums = prev
+        .filter(p => (p.Cod_Localidade || '').replace('JNM ','JNM.') === codLoc)
+        .map(p => parseInt((p.Codigo || '').split('-')[1] || '0', 10))
+        .filter(n => !isNaN(n) && n > 0);
+      let next = nums.length ? Math.max.apply(null, nums) + 1 : 1;
+      let code = codLoc + '-' + String(next).padStart(4,'0') + '-' + codCat;
+      while (prev.some(p => p.Codigo === code)) {
+        next++;
+        code = codLoc + '-' + String(next).padStart(4,'0') + '-' + codCat;
+      }
+      const newProj = Object.assign({}, form, {
+        Codigo: code,
+        Data_Cadastro: today(),
+        Cod_Localidade: codLoc,
+        Cod_Categoria: codCat
+      });
+      return prev.concat([newProj]);
+    });
+  };
+
+  const updateProject = (form) => {
+    const oldCode = editProject ? editProject.Codigo : form.Codigo;
+    const newCode = form.Codigo;
+    if (newCode !== oldCode && projects.some(p => p.Codigo === newCode)) {
+      addToast('Código "' + newCode + '" já está em uso!', 'error');
+      return;
+    }
+    setProjects(p => p.map(x => x.Codigo === oldCode ? Object.assign({}, x, form, {Codigo: newCode}) : x));
+    if (newCode !== oldCode) {
+      setMaterials(m => m.map(x => x.Codigo_Projeto === oldCode ? Object.assign({}, x, {Codigo_Projeto: newCode}) : x));
+      setMaoDeObra(m => m.map(x => x.Codigo_Projeto === oldCode ? Object.assign({}, x, {Codigo_Projeto: newCode}) : x));
+      addToast('Projeto atualizado! Código: ' + oldCode + ' -> ' + newCode, 'success');
+    } else {
+      addToast('Projeto atualizado!', 'success');
+    }
+    setEditProject(null);
+  };
+
+  const deleteProject = (code) => {
+    if (!confirm(`Excluir projeto ${code}?`)) return;
+    setProjects(p=>p.filter(x=>x.Codigo!==code));
+    setMaterials(m=>m.filter(x=>x.Codigo_Projeto!==code));
+    setMaoDeObra(m=>m.filter(x=>x.Codigo_Projeto!==code));
+    addToast('Projeto excluído.','info');
+  };
+
+  // ── Renderização por fase ─────────────────────────────────────────────────
+  if (phase === 'startup') {
+    return <GDriveStartup onDataLoaded={handleDataLoaded} onUseSeed={()=>handleDataLoaded(null,'seed')}/>;
+  }
+
+  if (phase === 'login' || !user) {
+    return <Login onLogin={handleLogin} users={users}/>;
+  }
+
+  const renderPage = () => {
+    switch(page) {
+      case 'dashboard': return <Dashboard projects={projects} materials={materials} maoDeObra={maoDeObra} setPage={setPage} setDetailCode={setDetailCode}/>;
+      case 'projects':
+      case 'project-new':
+        return <ProjectsList projects={projects} materials={materials} maoDeObra={maoDeObra} listas={listas} addProject={addProject} addToast={addToast} onView={(code)=>{setDetailCode(code);setPage('project-detail');}} onEdit={setEditProject} onDelete={deleteProject} user={user}/>;
+      case 'project-detail':
+        return <ProjectDetail code={detailCode} projects={projects} materials={materials} maoDeObra={maoDeObra} listas={listas} onBack={()=>setPage('projects')} onEdit={setEditProject} updateMaterials={setMaterials} updateMO={setMaoDeObra} addToast={addToast}/>;
+      case 'database': return <DatabasePage listas={listas} updateListas={setListas} addToast={addToast}/>;
+      case 'catalog': return <CatalogPage listas={listas} updateListas={setListas} addToast={addToast}/>;
+      case 'users': return <UsersPage user={user} users={users} updateUsers={setUsers} addToast={addToast}/>;
+      case 'reports': return <ReportsPage projects={projects} materials={materials} maoDeObra={maoDeObra} listas={listas} addToast={addToast}/>;
+      case 'backup': return <BackupPage projects={projects} materials={materials} maoDeObra={maoDeObra} listas={listas} loadBackup={loadBackup} addToast={addToast}/>;
+      default: return <Dashboard projects={projects} materials={materials} maoDeObra={maoDeObra} setPage={setPage} setDetailCode={setDetailCode}/>;
+    }
+  };
+
+  return (
+    <div className="app">
+      <Sidebar page={page} setPage={setPage} user={user} onLogout={()=>{setUser(null);setPhase('login');}}/>
+      <SaveIndicator
+        gdStatus={gdStatus}
+        lastSave={gdLastSave}
+        onSaveGDrive={()=>performSave()}
+        onBackupLocal={saveToFile}
+      />
+      <div className="main">{renderPage()}</div>
+      {editProject && <EditProjectModal project={editProject} listas={listas} onSave={updateProject} onClose={()=>setEditProject(null)} user={user}/>}
+      <ToastContainer toasts={toasts}/>
+    </div>
+  );
+}
+
+ReactDOM.render(<App/>, document.getElementById('root'));
+</script>
+</body>
+</html>
